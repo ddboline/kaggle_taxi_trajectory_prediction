@@ -12,9 +12,12 @@ import pandas as pd
 from load_data import haversine_distance
 
 def split_polyline(polyline_str):
-    poly_struct = eval(polyline_str.replace('[','(').replace(']',')'))
-    return poly_struct
-
+    latlons = []
+    for latlon in polyline_str.replace('[[','').replace(']]','').split('],['):
+        lat, lon = map(float, latlon.split(','))
+        latlons.append((lat, lon))
+    return latlons
+    
 def total_distance(latlon_points):
     if len(latlon_points) <= 2:
         return 0.
@@ -31,15 +34,12 @@ def feature_extraction(is_test=False):
                               
     print metadata_df.columns
     
-    output_files = []
     if is_test:
-        output_files = {ct: gzip.open('test_fe_%s.csv.gz' % ct, 'wb') 
-                        for ct in ('A', 'B', 'C')}
+        output_file = gzip.open('test_fe.csv.gz', 'wb')
     else:
-        output_files = {ct: gzip.open('train_fe_%s.csv.gz' % ct, 'wb') 
-                        for ct in ('A', 'B', 'C')}
+        output_file = gzip.open('train_fe.csv.gz', 'wb')
     
-    csv_writers = {ct: csv.writer(f) for (ct, f) in output_files.items()}
+    csv_writer = csv.writer(output_file)
     
     input_file = 'train.csv.gz'
     if is_test:
@@ -54,30 +54,27 @@ def feature_extraction(is_test=False):
                       'NUMBER_POINTS',
                       'TOTAL_DISTANCE',
                       'DEST_LAT', 'DEST_LON']
-        for cwr in csv_writers.values():
-            cwr.writerow(new_labels)
+        csv_writer.writerow(new_labels)
         for idx, row in enumerate(csv_reader):
             row_dict = dict(zip(labels, row))
             latlon_points = split_polyline(row_dict['POLYLINE'])
             if len(latlon_points) == 0:
                 row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = ('nan', 'nan')
                 row_dict['DEST_LAT'], row_dict['DEST_LON'] = ('nan', 'nan')
-            elif len(latlon_points) > 2:
+            else:
                 row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = latlon_points[0]
                 row_dict['DEST_LAT'], row_dict['DEST_LON'] = latlon_points[-1]
-            else:
-                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = latlon_points
-                row_dict['DEST_LAT'], row_dict['DEST_LON'] = latlon_points
             tot_dist = total_distance(latlon_points)
             row_dict['NUMBER_POINTS'] = len(latlon_points)
             row_dict['TOTAL_DISTANCE'] = tot_dist
 
             row_val = [row_dict[col] for col in new_labels]
-            csv_writers[row_dict['CALL_TYPE']].writerow(row_val)
+            csv_writer.writerow(row_val)
+            print row_val
+            raw_input()
             if idx % 10000 == 0:
                 print 'processed %d' % idx
-    for inf in output_files.values():
-        inf.close()
+    output_file.close()
     return
 
 if __name__ == '__main__':
