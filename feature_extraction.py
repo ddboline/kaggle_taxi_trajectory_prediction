@@ -95,8 +95,7 @@ def feature_extraction(is_test=False):
                           'MISSING_DATA', 'TRAJECTORY_IDX', 'ORIGIN_LAT',
                           'ORIGIN_LON', 'NUMBER_POINTS', 'TOTAL_DISTANCE',
                           'DEST_LAT', 'DEST_LON']
-        new_labels_trj = ['TRAJECTORY_IDX', 'POINT_IDX', 'LATGRID', 'LONGRID',
-                          'LAT', 'LON', 'DIS']
+        new_labels_trj = ['TRAJECTORY_IDX', 'POINT_IDX', 'LAT', 'LON']
         csv_writer_idx.writerow(new_labels_idx)
         csv_writer_trj.writerow(new_labels_trj)
         for idx, row in enumerate(csv_reader):
@@ -123,7 +122,7 @@ def feature_extraction(is_test=False):
                     longrid = 0
                 if longrid >= 100:
                     longrid = 100
-                row_val = [idx, idy, latgrid, longrid, lat, lon, dis]
+                row_val = [idx, idy, lat, lon]
                 csv_writer_trj.writerow(row_val)
                 tot_dist += dis
 
@@ -147,7 +146,11 @@ def feature_extraction(is_test=False):
                     latlon_points[-1][:2]
 
             if row_dict['ORIGIN_STAND'] != "":
-                ost = int(row_dict['ORIGIN_STAND'])
+                try:
+                    ost = int(row_dict['ORIGIN_STAND'])
+                except ValueError:
+                    print(row_dict['ORIGIN_STAND'])
+                    exit(0)
                 if row_dict['ORIGIN_LAT'] == 'nan' \
                         and row_dict['ORIGIN_LON'] == 'nan':
                     row_dict['ORIGIN_LAT'] = taxi_stand_latlon[ost]['LAT']
@@ -166,8 +169,8 @@ def feature_extraction(is_test=False):
                     print('latlim', latlim)
                 if lonlim[0] < LONLIM[0] or lonlim[1] > LONLIM[1]:
                     print('lonlim', lonlim)
-            if idx > 10000:
-                exit(0)
+#            if idx > 1000:
+#                exit(0)
 
         print('latlim', latlim)
         print('lonlim', lonlim)
