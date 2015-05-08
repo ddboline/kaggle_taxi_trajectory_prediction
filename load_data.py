@@ -38,6 +38,7 @@ def load_data(do_plots=False):
     train_df = clean_data(train_df)
     test_df = clean_data(test_df)
     
+    print(train_df.shape, test_df.shape)
     print(test_df.dtypes)
 
     if do_plots:

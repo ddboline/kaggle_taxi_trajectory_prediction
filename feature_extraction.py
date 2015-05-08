@@ -10,6 +10,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import gzip
 import csv
 from math import sqrt, sin, cos, pi, asin
@@ -88,6 +89,8 @@ def feature_extraction(is_test=False):
         output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
         output_file_trj = [gzip.open('test_trj.csv.gz', 'wb')]
     else:
+        if not os.path.exists('train'):
+            os.makedirs('train')
         output_file_idx = gzip.open('train_idx.csv.gz', 'wb')
         output_file_trj = [
             gzip.open('train/train_trj_%02d.csv.gz' % idx, 'wb')
@@ -186,7 +189,7 @@ def feature_extraction(is_test=False):
                     print('latlim', latlim)
                 if lonlim[0] < LONLIM[0] or lonlim[1] > LONLIM[1]:
                     print('lonlim', lonlim)
-#            if idx > 1000:
+#            if idx > 10000:
 #                exit(0)
 
         print('latlim', latlim)
