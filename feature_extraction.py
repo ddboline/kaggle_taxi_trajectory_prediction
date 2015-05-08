@@ -5,76 +5,174 @@ Created on Wed Apr 22 15:36:00 2015
 
 @author: ddboline
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import gzip
 import csv
-import pandas as pd
+from math import sqrt, sin, cos, pi, asin
+#import pandas as pd
 
-from load_data import haversine_distance
+LATLIM = (40.5, 41.5)
+LONLIM = (-8.7, -8.0)
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    r_earth = 6371.
+    dlat = abs(lat1-lat2)*pi/180.
+    dlon = abs(lon1-lon2)*pi/180.
+    lat1 *= pi/180.
+    lat2 *= pi/180.
+    dist = 2. * r_earth * asin(sqrt(sin(dlat/2.)**2 +
+                                      cos(lat1)*cos(lat2)*sin(dlon/2.)**2))
+    return dist
 
 def split_polyline(polyline_str):
     latlons = []
-    for latlon in polyline_str.replace('[[','').replace(']]','').split('],['):
-        lat, lon = map(float, latlon.split(','))
-        latlons.append((lat, lon))
+    missing = 0
+    for idx, latlon in enumerate(polyline_str.split('],[')):
+        latlon = latlon.replace('[[', '').replace(']]', '')
+        if latlon == '[]':
+            continue
+        try:
+            lon, lat = map(float, latlon.split(','))
+        except:
+            print(type(latlon), latlon)
+            exit(0)
+
+        dis = 0
+        if len(latlons) > 0:
+            dis = haversine_distance(lat, lon, latlons[-1][0], latlons[-1][1])
+
+        if dis > 1.0 * (1 + missing):
+            missing += 1
+            continue
+
+        if lat < LATLIM[0] or lat > LATLIM[1] or lon < LONLIM[0] or \
+                lon > LONLIM[1]:
+            if idx == 0:
+                missing += 1
+                continue
+
+        latlons.append((lat, lon, dis))
     return latlons
-    
-def total_distance(latlon_points):
-    if len(latlon_points) <= 2:
-        return 0.
-    lat0, lon0 = latlon_points[0]
-    tot_dist = 0
-    for lat, lon in latlon_points[1:]:
-        tot_dist += haversine_distance(lat0, lon0, lat, lon)
-        lat0, lon0 = lat, lon
-    return tot_dist
 
 def feature_extraction(is_test=False):
-    metadata_df = pd.read_csv('metaData_taxistandsID_name_GPSlocation.csv.gz',
-                              compression='gzip')
-                              
-    print metadata_df.columns
-    
+    taxi_stand_latlon = {}
+    with gzip.open('metaData_taxistandsID_name_GPSlocation.csv.gz', 'rb') as \
+            mfile:
+        csv_reader = csv.reader(mfile)
+        labels = next(csv_reader)
+        for idx, row in enumerate(csv_reader):
+            row_dict = dict(zip(labels, row))
+            taxi_stand_latlon[int(row_dict['ID'])] = {
+                'DESC': row_dict[u'Descricao'],
+                'LAT': row_dict['Latitude'],
+                'LON': row_dict['Longitude']}
+
     if is_test:
-        output_file = gzip.open('test_fe.csv.gz', 'wb')
+        output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
+        output_file_trj = gzip.open('test_trj.csv.gz', 'wb')
     else:
-        output_file = gzip.open('train_fe.csv.gz', 'wb')
-    
-    csv_writer = csv.writer(output_file)
-    
+        output_file_idx = gzip.open('train_idx.csv.gz', 'wb')
+        output_file_trj = gzip.open('train_trj.csv.gz', 'wb')
+
+    csv_writer_idx = csv.writer(output_file_idx)
+    csv_writer_trj = csv.writer(output_file_trj)
+
     input_file = 'train.csv.gz'
     if is_test:
         input_file = 'test.csv.gz'
-    
+
+    latlim = [None, None]
+    lonlim = [None, None]
     with gzip.open(input_file, 'rb') as infile:
         csv_reader = csv.reader(infile)
         labels = next(csv_reader)
-        new_labels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND', 
-                      'TAXI_ID', 'TIMESTAMP', 'DAY_TYPE', 'MISSING_DATA', 
-                      'ORIGIN_LAT', 'ORIGIN_LON',
-                      'NUMBER_POINTS',
-                      'TOTAL_DISTANCE',
-                      'DEST_LAT', 'DEST_LON']
-        csv_writer.writerow(new_labels)
+        new_labels_idx = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL',
+                          'ORIGIN_STAND', 'TAXI_ID', 'TIMESTAMP', 'DAY_TYPE',
+                          'MISSING_DATA', 'TRAJECTORY_IDX', 'ORIGIN_LAT',
+                          'ORIGIN_LON', 'NUMBER_POINTS', 'TOTAL_DISTANCE',
+                          'DEST_LAT', 'DEST_LON']
+        new_labels_trj = ['TRAJECTORY_IDX', 'POINT_IDX', 'LATGRID', 'LONGRID',
+                          'LAT', 'LON', 'DIS']
+        csv_writer_idx.writerow(new_labels_idx)
+        csv_writer_trj.writerow(new_labels_trj)
         for idx, row in enumerate(csv_reader):
             row_dict = dict(zip(labels, row))
             latlon_points = split_polyline(row_dict['POLYLINE'])
-            if len(latlon_points) == 0:
+            tot_dist = 0
+            for idy, lat_lon in enumerate(latlon_points):
+                lat, lon, dis = lat_lon
+                if latlim[0] is None or latlim[0] > lat:
+                    latlim[0] = lat
+                if latlim[1] is None or latlim[1] < lat:
+                    latlim[1] = lat
+                if lonlim[0] is None or lonlim[0] > lon:
+                    lonlim[0] = lon
+                if lonlim[1] is None or lonlim[1] < lon:
+                    lonlim[1] = lon
+                latgrid = int((lat-LATLIM[0]) * 100 / (LATLIM[1]-LATLIM[0]))
+                if latgrid < 0:
+                    latgrid = 0
+                if latgrid >= 100:
+                    latgrid = 100
+                longrid = int((lon-LONLIM[0]) * 100 / (LONLIM[1]-LONLIM[0]))
+                if longrid < 0:
+                    longrid = 0
+                if longrid >= 100:
+                    longrid = 100
+                row_val = [idx, idy, latgrid, longrid, lat, lon, dis]
+                csv_writer_trj.writerow(row_val)
+                tot_dist += dis
+
+            n_points = len(latlon_points)
+            if n_points == 0:
                 row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = ('nan', 'nan')
                 row_dict['DEST_LAT'], row_dict['DEST_LON'] = ('nan', 'nan')
+            elif n_points == 1:
+                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = ('nan', 'nan')
+                row_dict['DEST_LAT'], row_dict['DEST_LON'] = \
+                    latlon_points[0][:2]
+            elif n_points == 2:
+                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = \
+                    latlon_points[0][:2]
+                row_dict['DEST_LAT'], row_dict['DEST_LON'] = \
+                    latlon_points[1][:2]
             else:
-                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = latlon_points[0]
-                row_dict['DEST_LAT'], row_dict['DEST_LON'] = latlon_points[-1]
-            tot_dist = total_distance(latlon_points)
-            row_dict['NUMBER_POINTS'] = len(latlon_points)
+                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = \
+                    latlon_points[0][:2]
+                row_dict['DEST_LAT'], row_dict['DEST_LON'] = \
+                    latlon_points[-1][:2]
+
+            if row_dict['ORIGIN_STAND'] != "":
+                ost = int(row_dict['ORIGIN_STAND'])
+                if row_dict['ORIGIN_LAT'] == 'nan' \
+                        and row_dict['ORIGIN_LON'] == 'nan':
+                    row_dict['ORIGIN_LAT'] = taxi_stand_latlon[ost]['LAT']
+                    row_dict['ORIGIN_LON'] = taxi_stand_latlon[ost]['LON']
+
+            row_dict['TRAJECTORY_IDX'] = idx
+
+            row_dict['NUMBER_POINTS'] = n_points
             row_dict['TOTAL_DISTANCE'] = tot_dist
 
-            row_val = [row_dict[col] for col in new_labels]
-            csv_writer.writerow(row_val)
-            print row_val
-            raw_input()
+            row_val = [row_dict[col] for col in new_labels_idx]
+            csv_writer_idx.writerow(row_val)
             if idx % 10000 == 0:
-                print 'processed %d' % idx
-    output_file.close()
+                print('processed %d' % idx)
+                if latlim[0] < LATLIM[0] or latlim[1] > LATLIM[1]:
+                    print('latlim', latlim)
+                if lonlim[0] < LONLIM[0] or lonlim[1] > LONLIM[1]:
+                    print('lonlim', lonlim)
+            if idx > 10000:
+                exit(0)
+
+        print('latlim', latlim)
+        print('lonlim', lonlim)
+    output_file_idx.close()
+    output_file_trj.close()
     return
 
 if __name__ == '__main__':
