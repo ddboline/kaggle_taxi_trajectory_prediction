@@ -8,18 +8,7 @@ Created on Wed Apr 22 14:40:52 2015
 import numpy as np
 import pandas as pd
 
-def haversine_distance(lat1, lon1, lat2, lon2):
-    r_earth = 6371.
-    dlat = np.abs(lat1-lat2)*np.pi/180.
-    dlon = np.abs(lon1-lon2)*np.pi/180.
-    lat1 *= np.pi/180.
-    lat2 *= np.pi/180.
-    dist = 2. * r_earth * np.arcsin(
-                            np.sqrt(
-                                np.sin(dlat/2.)**2 + 
-                                    np.cos(lat1) * np.cos(lat2) * 
-                                    np.sin(dlon/2.)**2))
-    return dist
+#from feature_extraction import haversine_distance
 
 def clean_data(df):
     df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
