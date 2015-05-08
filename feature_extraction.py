@@ -13,10 +13,23 @@ from __future__ import unicode_literals
 import gzip
 import csv
 from math import sqrt, sin, cos, pi, asin
-#import pandas as pd
 
-LATLIM = (40.5, 41.5)
-LONLIM = (-8.7, -8.0)
+LATLIM = (41.1, 41.2)
+LONLIM = (-8.7, -8.5)
+
+def get_lat_bin(lat, nbins=100):
+    if lat < LATLIM[0]:
+        return 0
+    if lat > LATLIM[1]:
+        return nbins
+    return (lat-LATLIM[0]) * nbins / (LATLIM[1]-LATLIM[0])
+
+def get_lon_bin(lon, nbins=100):
+    if lon < LONLIM[0]:
+        return 0
+    if lon > LONLIM[1]:
+        return nbins
+    return (lon-LONLIM[0]) * nbins / (LONLIM[1]-LONLIM[0])
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     r_earth = 6371.
@@ -73,13 +86,16 @@ def feature_extraction(is_test=False):
 
     if is_test:
         output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
-        output_file_trj = gzip.open('test_trj.csv.gz', 'wb')
+        output_file_trj = [gzip.open('test_trj.csv.gz', 'wb')]
     else:
         output_file_idx = gzip.open('train_idx.csv.gz', 'wb')
-        output_file_trj = gzip.open('train_trj.csv.gz', 'wb')
+        output_file_trj = [
+            gzip.open('train/train_trj_%02d.csv.gz' % idx, 'wb')
+            for idx in range(100)]
 
     csv_writer_idx = csv.writer(output_file_idx)
-    csv_writer_trj = csv.writer(output_file_trj)
+    csv_writer_trj = [csv.writer(f) for f in output_file_trj]
+    n_trj_file = len(csv_writer_trj)
 
     input_file = 'train.csv.gz'
     if is_test:
@@ -97,7 +113,8 @@ def feature_extraction(is_test=False):
                           'DEST_LAT', 'DEST_LON']
         new_labels_trj = ['TRAJECTORY_IDX', 'POINT_IDX', 'LAT', 'LON']
         csv_writer_idx.writerow(new_labels_idx)
-        csv_writer_trj.writerow(new_labels_trj)
+        for csvf in csv_writer_trj:
+            csvf.writerow(new_labels_trj)
         for idx, row in enumerate(csv_reader):
             row_dict = dict(zip(labels, row))
             latlon_points = split_polyline(row_dict['POLYLINE'])
@@ -123,7 +140,7 @@ def feature_extraction(is_test=False):
                 if longrid >= 100:
                     longrid = 100
                 row_val = [idx, idy, lat, lon]
-                csv_writer_trj.writerow(row_val)
+                csv_writer_trj[idx % n_trj_file].writerow(row_val)
                 tot_dist += dis
 
             n_points = len(latlon_points)
@@ -145,12 +162,12 @@ def feature_extraction(is_test=False):
                 row_dict['DEST_LAT'], row_dict['DEST_LON'] = \
                     latlon_points[-1][:2]
 
+            if row_dict['ORIGIN_CALL'] == 'NA':
+                row_dict['ORIGIN_CALL'] = ''
+            if row_dict['ORIGIN_STAND'] == 'NA':
+                row_dict['ORIGIN_STAND'] = ''
             if row_dict['ORIGIN_STAND'] != "":
-                try:
-                    ost = int(row_dict['ORIGIN_STAND'])
-                except ValueError:
-                    print(row_dict['ORIGIN_STAND'])
-                    exit(0)
+                ost = int(row_dict['ORIGIN_STAND'])
                 if row_dict['ORIGIN_LAT'] == 'nan' \
                         and row_dict['ORIGIN_LON'] == 'nan':
                     row_dict['ORIGIN_LAT'] = taxi_stand_latlon[ost]['LAT']
@@ -175,9 +192,57 @@ def feature_extraction(is_test=False):
         print('latlim', latlim)
         print('lonlim', lonlim)
     output_file_idx.close()
-    output_file_trj.close()
+    for outf in output_file_trj:
+        outf.close()
     return
+
+def describe_trajectory_file():
+    nrows = 0
+    lat_stat = [0, 0]
+    lon_stat = [0, 0]
+    with gzip.open('train_trj.csv.gz', 'rb') as infile:
+        csv_reader = csv.reader(infile)
+        labels = next(csv_reader)
+        for idx, row in enumerate(csv_reader):
+            if idx % 1000000 == 0:
+                print('processed %d' % idx)
+            row_dict = dict(zip(labels, row))
+            lat = float(row_dict['LAT'])
+            lon = float(row_dict['LON'])
+            lat_stat[0] += lat
+            lat_stat[1] += lat**2
+            lon_stat[0] += lon
+            lon_stat[1] += lon**2
+            nrows += 1
+    lat_stat[0] /= nrows
+    lon_stat[0] /= nrows
+    lat_stat[1] = sqrt(lat_stat[1]/nrows-lat_stat[0]**2)
+    lon_stat[1] = sqrt(lon_stat[1]/nrows-lon_stat[0]**2)
+    print(lat_stat, lon_stat)
+    return
+
+def get_trajectory(trj_idx=None, lat_bin=None, lon_bin=None,
+                   fname='train_trj.csv.gz'):
+    trajectory = []
+    with gzip.open('train_trj.csv.gz', 'rb') as infile:
+        csv_reader = csv.reader(infile)
+        labels = next(csv_reader)
+        for idx, row in enumerate(csv_reader):
+            if idx % 1000000 == 0:
+                print('processed %d' % idx)
+            row_dict = dict(zip(labels, row))
+            if trj_idx and int(row_dict['TRAJECTORY_IDX']) == trj_idx:
+                lat = float(row_dict['LAT'])
+                lon = float(row_dict['LON'])
+                trajectory.append((lat, lon))
+            if lat_bin and lon_bin:
+                latbin = get_lat_bin(float(row_dict['LAT']))
+                lonbin = get_lon_bin(float(row_dict['LON']))
+                if latbin == lat_bin and lonbin == lon_bin:
+                    trajectory.append(row_dict['TRAJECTORY_IDX'])
+    return trajectory
 
 if __name__ == '__main__':
     feature_extraction(is_test=False)
     feature_extraction(is_test=True)
+#    describe_trajectory_file()
