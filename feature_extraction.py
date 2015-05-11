@@ -176,7 +176,8 @@ def feature_extraction(is_test=False):
                 row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = ('nan', 'nan')
                 row_dict['DEST_LAT'], row_dict['DEST_LON'] = ('nan', 'nan')
             elif n_points == 1:
-                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = ('nan', 'nan')
+                row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = \
+                    latlon_points[0][:2]
                 row_dict['DEST_LAT'], row_dict['DEST_LON'] = \
                     latlon_points[0][:2]
             elif n_points == 2:
@@ -301,7 +302,7 @@ def get_trajectory(trj_idx=None, lat_bin=None, lon_bin=None,
     return trajectory
 
 if __name__ == '__main__':
-#    feature_extraction(is_test=False)
+    feature_extraction(is_test=False)
     feature_extraction(is_test=True)
 #    describe_trajectory_file()
 #    describe_bins()
