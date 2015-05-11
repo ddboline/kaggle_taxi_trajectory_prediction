@@ -100,14 +100,9 @@ def feature_extraction(is_test=False):
                 'LON': row_dict['Longitude']}
 
     if is_test:
-        if not os.path.exists('test'):
-            os.makedirs('test')
         output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
         output_file_trj = [gzip.open('test_trj.csv.gz', 'wb')]
-        output_file_bin = [[
-            gzip.open('test/test_bin_%02d_%02d.csv.gz' % (idx, jdx), 'wb')
-            for jdx in range(11)] for idx in range(11)]
-        output_file_nib = [gzip.open('test_nib.csv.gz', 'wb')]
+        output_file_nib = gzip.open('test_nib.csv.gz', 'wb')
     else:
         if not os.path.exists('train'):
             os.makedirs('train')
@@ -115,16 +110,11 @@ def feature_extraction(is_test=False):
         output_file_trj = [
             gzip.open('train/train_trj_%02d.csv.gz' % idx, 'wb')
             for idx in range(100)]
-        output_file_bin = [[
-            gzip.open('train/train_bin_%02d_%02d.csv.gz' % (idx, jdx), 'wb')
-            for jdx in range(11)] for idx in range(11)]
-        output_file_nib = [
-            gzip.open('train/train_nib_%02d.csv.gz' % idx, 'wb')
-            for idx in range(100)]
+        output_file_nib = gzip.open('train_nib.csv.gz', 'wb')
 
     csv_writer_idx = csv.writer(output_file_idx)
     csv_writer_trj = [csv.writer(f) for f in output_file_trj]
-    csv_writer_nib = [csv.writer(f) for f in output_file_nib]
+    csv_writer_nib = csv.writer(output_file_nib)
     n_trj_file = len(csv_writer_trj)
 
     input_file = 'train.csv.gz'
@@ -144,8 +134,7 @@ def feature_extraction(is_test=False):
         csv_writer_idx.writerow(new_labels_idx)
         for csvf in csv_writer_trj:
             csvf.writerow(new_labels_trj)
-        for csvf in csv_writer_nib:
-            csvf.writerow(['TRAJECTORY_IDX', 'LATBIN', 'LONBIN'])
+        csv_writer_nib.writerow(['TRAJECTORY_IDX', 'LATBIN', 'LONBIN'])
         for idx, row in enumerate(csv_reader):
             row_dict = dict(zip(labels, row))
             latlon_points = split_polyline(row_dict['POLYLINE'])
@@ -160,8 +149,7 @@ def feature_extraction(is_test=False):
                 row_val = [idx, idy, lat, lon, lat_bin, lon_bin]
                 csv_writer_trj[idx % n_trj_file].writerow(row_val)
             for latb, lonb in sorted(bin_set):
-                output_file_bin[latb%10][lonb%10].write('%s\n' % idx)
-                csv_writer_nib[idx % n_trj_file].writerow([idx, latb, lonb])
+                csv_writer_nib.writerow([idx, latb, lonb])
 
             n_points = len(latlon_points)
             if n_points == 0:
@@ -207,11 +195,9 @@ def feature_extraction(is_test=False):
 #                exit(0)
 
     output_file_idx.close()
-    for outf in output_file_trj + output_file_nib:
+    output_file_nib.close()
+    for outf in output_file_trj:
         outf.close()
-    for i in output_file_bin:
-        for j in i:
-            j.close()
     return
 
 def get_trajectory(trj_idx=None, is_test=False):
@@ -255,7 +241,7 @@ def get_matching_list(trj_idx=None, is_test=False):
         latlon_list.add((row['LATBIN'], row['LONBIN']))
     
     for latbin, lonbin in latlon_list:
-        fname = 'train/train_bin_%02d_%02d.csv.gz' % (latbin, lonbin)
+        fname = 'train_nib.csv.gz'
         trj_arr = (pd.read_csv(fname, compression='gzip', index_col=False,
                               header=None)).values
         for idx in range(trj_arr.shape[0]):
