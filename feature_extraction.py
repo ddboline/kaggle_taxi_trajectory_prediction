@@ -203,8 +203,8 @@ def feature_extraction(is_test=False):
             csv_writer_idx.writerow(row_val)
             if idx % 10000 == 0:
                 print('processed %d' % idx)
-            if idx > 1000:
-                exit(0)
+#            if idx > 1000:
+#                exit(0)
 
     output_file_idx.close()
     for outf in output_file_trj + output_file_nib:
