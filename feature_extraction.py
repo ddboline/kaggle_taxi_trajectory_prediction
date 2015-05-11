@@ -216,8 +216,9 @@ def feature_extraction(is_test=False):
         print('latlim', latlim)
         print('lonlim', lonlim)
     output_file_idx.close()
-    for outf in output_file_trj + output_file_bin + output_file_nib:
+    for outf in output_file_trj + output_file_nib:
         outf.close()
+    [[i.close() for i in j] for j in output_file_bin]
     return
 
 def describe_trajectory_file():
@@ -294,7 +295,7 @@ def get_trajectory(trj_idx=None, lat_bin=None, lon_bin=None,
     return trajectory
 
 if __name__ == '__main__':
-    feature_extraction(is_test=False)
+#    feature_extraction(is_test=False)
     feature_extraction(is_test=True)
 #    describe_trajectory_file()
 #    describe_bins()
