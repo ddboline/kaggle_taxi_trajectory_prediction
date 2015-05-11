@@ -90,7 +90,9 @@ def feature_extraction(is_test=False):
     if is_test:
         output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
         output_file_trj = [gzip.open('test_trj.csv.gz', 'wb')]
-        output_file_bin = [gzip.open('test_bin.csv.gz', 'wb')]
+        output_file_bin = [[
+            gzip.open('test/test_bin_%02d_%02d.csv.gz' % (idx, jdx), 'wb')
+            for jdx in range(11)] for idx in range(11)]
         output_file_nib = [gzip.open('test_nib.csv.gz', 'wb')]
     else:
         if not os.path.exists('train'):
@@ -218,7 +220,9 @@ def feature_extraction(is_test=False):
     output_file_idx.close()
     for outf in output_file_trj + output_file_nib:
         outf.close()
-    [[i.close() for i in j] for j in output_file_bin]
+    for i in output_file_bin:
+        for j in i:
+            j.close()
     return
 
 def describe_trajectory_file():
