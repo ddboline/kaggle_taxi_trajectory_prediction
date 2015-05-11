@@ -88,6 +88,8 @@ def feature_extraction(is_test=False):
                 'LON': row_dict['Longitude']}
 
     if is_test:
+        if not os.path.exists('test'):
+            os.makedirs('test')
         output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
         output_file_trj = [gzip.open('test_trj.csv.gz', 'wb')]
         output_file_bin = [[
