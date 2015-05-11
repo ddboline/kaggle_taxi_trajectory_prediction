@@ -15,6 +15,8 @@ import gzip
 import csv
 from math import sqrt, sin, cos, pi, asin
 
+from collections import defaultdict
+
 LATLIM = (41.1, 41.2)
 LONLIM = (-8.7, -8.5)
 
@@ -23,14 +25,14 @@ def get_lat_bin(lat, nbins=100):
         return 0
     if lat > LATLIM[1]:
         return nbins
-    return (lat-LATLIM[0]) * nbins / (LATLIM[1]-LATLIM[0])
+    return int((lat-LATLIM[0]) * nbins / (LATLIM[1]-LATLIM[0]))
 
 def get_lon_bin(lon, nbins=100):
     if lon < LONLIM[0]:
         return 0
     if lon > LONLIM[1]:
         return nbins
-    return (lon-LONLIM[0]) * nbins / (LONLIM[1]-LONLIM[0])
+    return int((lon-LONLIM[0]) * nbins / (LONLIM[1]-LONLIM[0]))
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     r_earth = 6371.
@@ -88,6 +90,8 @@ def feature_extraction(is_test=False):
     if is_test:
         output_file_idx = gzip.open('test_idx.csv.gz', 'wb')
         output_file_trj = [gzip.open('test_trj.csv.gz', 'wb')]
+        output_file_bin = [gzip.open('test_bin.csv.gz', 'wb')]
+        output_file_nib = [gzip.open('test_nib.csv.gz', 'wb')]
     else:
         if not os.path.exists('train'):
             os.makedirs('train')
@@ -95,10 +99,18 @@ def feature_extraction(is_test=False):
         output_file_trj = [
             gzip.open('train/train_trj_%02d.csv.gz' % idx, 'wb')
             for idx in range(100)]
+        output_file_bin = [[
+            gzip.open('train/train_bin_%02d_%02d.csv.gz' % (idx, jdx), 'wb')
+            for jdx in range(11)] for idx in range(11)]
+        output_file_nib = [
+            gzip.open('train/train_nib_%02d.csv.gz' % idx, 'wb')
+            for idx in range(100)]
 
     csv_writer_idx = csv.writer(output_file_idx)
     csv_writer_trj = [csv.writer(f) for f in output_file_trj]
+    csv_writer_nib = [csv.writer(f) for f in output_file_nib]
     n_trj_file = len(csv_writer_trj)
+
 
     input_file = 'train.csv.gz'
     if is_test:
@@ -118,10 +130,13 @@ def feature_extraction(is_test=False):
         csv_writer_idx.writerow(new_labels_idx)
         for csvf in csv_writer_trj:
             csvf.writerow(new_labels_trj)
+        for csvf in csv_writer_nib:
+            csvf.writerow(['TRAJECTORY_IDX', 'LATBIN', 'LONBIN'])
         for idx, row in enumerate(csv_reader):
             row_dict = dict(zip(labels, row))
             latlon_points = split_polyline(row_dict['POLYLINE'])
             tot_dist = 0
+            bin_set = set()
             for idy, lat_lon in enumerate(latlon_points):
                 lat, lon, dis = lat_lon
                 if latlim[0] is None or latlim[0] > lat:
@@ -144,7 +159,13 @@ def feature_extraction(is_test=False):
                     longrid = 100
                 row_val = [idx, idy, lat, lon]
                 csv_writer_trj[idx % n_trj_file].writerow(row_val)
+                lat_bin = get_lat_bin(lat, nbins=10)
+                lon_bin = get_lon_bin(lon, nbins=10)
+                bin_set.add((lat_bin, lon_bin))
                 tot_dist += dis
+            for latb, lonb in bin_set:
+                output_file_bin[latb][lonb].write('%s\n' % idx)
+                csv_writer_nib[idx % n_trj_file].writerow([idx, latb, lonb])
 
             n_points = len(latlon_points)
             if n_points == 0:
@@ -195,7 +216,7 @@ def feature_extraction(is_test=False):
         print('latlim', latlim)
         print('lonlim', lonlim)
     output_file_idx.close()
-    for outf in output_file_trj:
+    for outf in output_file_trj + output_file_bin + output_file_nib:
         outf.close()
     return
 
@@ -224,6 +245,33 @@ def describe_trajectory_file():
     print(lat_stat, lon_stat)
     return
 
+def describe_bins():
+    bin_files = []
+    for idx in range(11):
+        _tmp = []
+        for jdx in range(11):
+            _tmp.append(gzip.open('train/train_bin_%02d_%02d.csv.gz' % (idx,
+                                                                        jdx),
+                                                                        'wb'))
+        bin_files.append(_tmp)
+    for idx in range(100):
+        print('idx', idx)
+        bin_dict = defaultdict(set)
+        with gzip.open('train/train_trj_%02d.csv.gz' % idx, 'rb') as infile:
+            csv_reader = csv.reader(infile)
+            labels = next(csv_reader)
+            for row in csv_reader:
+                row_dict = dict(zip(labels, row))
+                tdx = int(row_dict['TRAJECTORY_IDX'])
+                lat = float(row_dict['LAT'])
+                lon = float(row_dict['LON'])
+                lat_bin = get_lat_bin(lat, nbins=10)
+                lon_bin = get_lon_bin(lon, nbins=10)
+                bin_dict[tdx].add((lat_bin, lon_bin))
+        for tdx, val in bin_dict.items():
+            for latbin, lonbin in val:
+                bin_files[latbin][lonbin].write('%d\n' % tdx)
+
 def get_trajectory(trj_idx=None, lat_bin=None, lon_bin=None,
                    fname='train_trj.csv.gz'):
     trajectory = []
@@ -249,3 +297,4 @@ if __name__ == '__main__':
     feature_extraction(is_test=False)
     feature_extraction(is_test=True)
 #    describe_trajectory_file()
+#    describe_bins()
