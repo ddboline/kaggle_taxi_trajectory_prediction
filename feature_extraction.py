@@ -163,7 +163,7 @@ def feature_extraction(is_test=False):
                 lon_bin = get_lon_bin(lon, nbins=10)
                 bin_set.add((lat_bin, lon_bin))
                 tot_dist += dis
-            for latb, lonb in bin_set:
+            for latb, lonb in sorted(bin_set):
                 output_file_bin[latb][lonb].write('%s\n' % idx)
                 csv_writer_nib[idx % n_trj_file].writerow([idx, latb, lonb])
 
@@ -210,7 +210,7 @@ def feature_extraction(is_test=False):
                     print('latlim', latlim)
                 if lonlim[0] < LONLIM[0] or lonlim[1] > LONLIM[1]:
                     print('lonlim', lonlim)
-#            if idx > 10000:
+#            if idx > 1000:
 #                exit(0)
 
         print('latlim', latlim)
