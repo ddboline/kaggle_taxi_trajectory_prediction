@@ -100,31 +100,37 @@ def find_best_traj(do_plots=False):
                 tedf_ = test_nib
             else:
                 tedf_ = train_nib
-            match_list_ = get_matching_list(tidx, test_df=tedf_,
-                                            train_df=train_nib)
-            common_traj = {}
-            time_0 = time.clock()
-            for fidx in range(100):
-                if fidx % 10 == 0:
-                    print('fidx %d' % fidx)
-                train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz' % fidx,
-                                        compression='gzip')
-                n_matching = 0
-                for idx_, tidx in enumerate(match_list_):
-                    if tidx % 100 != fidx:
-                        continue
-                    if tidx in randperm[:640]:
-                        continue
-                    n_matching += 1
-                    train_traj_ = get_trajectory(tidx, train_df=train_trj_)
-                    n_common = compare_trajectories(traj_, train_traj_)
-                    if n_common == 0:
-                        continue
-                    common_traj[tidx] = n_common
-                time_1 = time.clock()
-                print('time %s %s %s' % (time_1-time_0, len(common_traj),
-                                         n_matching))
-                time_0 = time_1
+            
+            def get_common_trajectories(mindist=0.05, rebin=1):
+                match_list_ = get_matching_list(tidx, test_df=tedf_,
+                                                train_df=train_nib)
+                common_traj = {}
+                time_0 = time.clock()
+                for fidx in range(100):
+                    if fidx % 10 == 0:
+                        print('fidx %d' % fidx)
+                    train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
+                                             % fidx, compression='gzip')
+                    n_matching = 0
+                    for idx_, tidx in enumerate(match_list_):
+                        if tidx % 100 != fidx:
+                            continue
+                        if tidx in randperm[:640]:
+                            continue
+                        n_matching += 1
+                        train_traj_ = get_trajectory(tidx, train_df=train_trj_)
+                        n_common = compare_trajectories(traj_, train_traj_)
+                        if n_common == 0:
+                            continue
+                        common_traj[tidx] = n_common
+                    time_1 = time.clock()
+                    print('time %s %s %s' % (time_1-time_0, len(common_traj),
+                                             n_matching))
+                    time_0 = time_1
+                return common_traj
+            common_traj = get_common_trajectories()
+            if len(common_traj) == 0:
+                common_traj = get_common_trajectories(0.1, 10)
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])
