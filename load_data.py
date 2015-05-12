@@ -24,8 +24,8 @@ from feature_extraction import haversine_distance, compare_trajectories
 import multiprocessing
 
 def compare_trajectories_parallel(args):
-    test_trj, train_trj, mindist = args
-    return compare_trajectories(test_trj, train_trj, mindist)
+    tidx, test_trj, train_trj, mindist = args
+    return tidx, compare_trajectories(test_trj, train_trj, mindist)
 
 def clean_data(df_):
     """
@@ -134,9 +134,10 @@ def find_best_traj(do_plots=False):
                             continue
                         n_matching += 1
                         train_traj_ = get_trajectory(tidx, train_df=train_trj_)
-                        train_trj_list.append((traj_, train_traj_, mindist_))
+                        train_trj_list.append((tidx, traj_, train_traj_,
+                                               mindist_))
 
-                    for n_common in pool.imap_unordered(
+                    for tidx, n_common in pool.imap_unordered(
                                             compare_trajectories_parallel,
                                             train_trj_list):
                         if n_common == 0:
