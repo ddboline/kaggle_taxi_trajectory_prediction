@@ -98,7 +98,7 @@ def find_best_traj(do_plots=False):
                 tedf_ = test_nib
             else:
                 tedf_ = train_nib
-            mindist_ = 0.05
+            mindist_ = 0.01
             rebin = 1
             common_traj = {}
             while len(common_traj) == 0:
