@@ -103,12 +103,13 @@ def find_best_traj(do_plots=False):
             match_list_ = get_matching_list(tidx, test_df=tedf_,
                                             train_df=train_nib)
             common_traj = {}
+            time_0 = time.clock()
             for fidx in range(100):
                 if fidx % 10 == 0:
                     print('fidx %d' % fidx)
                 train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz' % fidx,
                                         compression='gzip')
-                time_0 = time.clock()
+                
                 for idx_, tidx in enumerate(match_list_):
                     if tidx % 100 != fidx:
                         continue
@@ -119,9 +120,9 @@ def find_best_traj(do_plots=False):
                     if n_common == 0:
                         continue
                     common_traj[tidx] = n_common
-                    time_1 = time.clock()
-                    print('time %s' % (time_1-time_0))
-                    time_0 = time_1
+                time_1 = time.clock()
+                print('time %s' % (time_1-time_0))
+                time_0 = time_1
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])
