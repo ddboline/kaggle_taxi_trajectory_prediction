@@ -15,17 +15,19 @@ import pandas as pd
 
 import gzip
 import csv
+import time
 
 #from feature_extraction import haversine_distance
 #from feature_extraction import LATLIM, LONLIM
 from feature_extraction import get_trajectory, get_matching_list
 
-try:
-    import pyximport
-    pyximport.install()
-    from compare_trajectories import haversine_distance, compare_trajectories
-except ImportError:
-    from feature_extraction import haversine_distance, compare_trajectories
+from feature_extraction import haversine_distance, compare_trajectories
+#try:
+#    import pyximport
+#    pyximport.install()
+#    from compare_trajectories import haversine_distance, compare_trajectories
+#except ImportError:
+#    from feature_extraction import haversine_distance, compare_trajectories
 
 def clean_data(df):
     df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
@@ -106,6 +108,7 @@ def find_best_traj(do_plots=False):
                     print('fidx %d' % fidx)
                 train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz' % fidx,
                                         compression='gzip')
+                time_0 = time.clock()
                 for idx_, tidx in enumerate(match_list_):
                     if tidx % 100 != fidx:
                         continue
@@ -116,6 +119,9 @@ def find_best_traj(do_plots=False):
                     if n_common == 0:
                         continue
                     common_traj[tidx] = n_common
+                    time_1 = time.clock()
+                    print('time %s' % time_1-time_0)
+                    time_0 = time_1
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])
