@@ -105,7 +105,6 @@ def find_best_traj(do_plots=False):
                     n_common = compare_trajectories(traj_, train_traj_)
                     if n_common == 0:
                         continue
-                    print('tidx %d %d' % (tidx, n_common))
                     common_traj[tidx] = n_common
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
