@@ -101,7 +101,7 @@ def find_best_traj(do_plots=False):
             else:
                 tedf_ = train_nib
             
-            def get_common_trajectories(mindist=0.05, rebin=1):
+            def get_common_trajectories(tidx, mindist=0.05, rebin=1):
                 match_list_ = get_matching_list(tidx, test_df=tedf_,
                                                 train_df=train_nib)
                 common_traj = {}
@@ -128,9 +128,9 @@ def find_best_traj(do_plots=False):
                                              n_matching))
                     time_0 = time_1
                 return common_traj
-            common_traj = get_common_trajectories()
+            common_traj = get_common_trajectories(tidx)
             if len(common_traj) == 0:
-                common_traj = get_common_trajectories(0.1, 10)
+                common_traj = get_common_trajectories(tidx, 0.1, 10)
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])
