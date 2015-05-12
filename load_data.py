@@ -74,9 +74,9 @@ def find_best_traj(do_plots=False):
            {'df': train_df.iloc[randperm[320:640], :],
             'fn': 'valid_final.csv.gz', 'test': False}]
     
-    outlabels = ['CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND', 'TAXI_ID',
-                 'TIMESTAMP', 'BEST_LAT', 'BEST_LON', 'AVG_LAT', 'AVG_LON',
-                 'DEST_LAT', 'DEST_LON']
+    outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND',
+                 'TAXI_ID', 'TIMESTAMP', 'BEST_LAT', 'BEST_LON', 'AVG_LAT',
+                 'AVG_LON', 'DEST_LAT', 'DEST_LON']
 
     for dfs_dict in dfs:
         df = dfs_dict['df']
