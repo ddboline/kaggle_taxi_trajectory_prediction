@@ -17,19 +17,14 @@ import gzip
 import csv
 import time
 
-#from feature_extraction import haversine_distance
-#from feature_extraction import LATLIM, LONLIM
 from feature_extraction import get_trajectory, get_matching_list
 
 from feature_extraction import haversine_distance, compare_trajectories
-#try:
-#    import pyximport
-#    pyximport.install()
-#    from compare_trajectories import haversine_distance, compare_trajectories
-#except ImportError:
-#    from feature_extraction import haversine_distance, compare_trajectories
 
 def clean_data(df):
+    """
+        Clean and update DataFrames
+    """
     df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
     df['DAY_TYPE'] = df['DAY_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
     df['WEEK'] = df['TIMESTAMP'].apply(lambda x: x % (7*24*3600))
@@ -43,17 +38,20 @@ def clean_data(df):
     df = df.dropna(axis=0, subset=['ORIGIN_LAT', 'ORIGIN_LON', 'DEST_LAT',
                                    'DEST_LON'])
 
-    df = df.drop(labels=['DAY_TYPE', 'TRIP_ID'], axis=1)
+#    df = df.drop(labels=['DAY_TYPE', 'TRIP_ID'], axis=1)
     return df
-    
+
 def find_best_traj(do_plots=False):
+    """
+        Find the best trajectories from "template" sample
+    """
     train_df = pd.read_csv('train_idx.csv.gz', compression='gzip')
     test_df = pd.read_csv('test_idx.csv.gz', compression='gzip')
     submit_df = pd.read_csv('sampleSubmission.csv.gz', compression='gzip')
-    
+
     train_df = clean_data(train_df)
     test_df = clean_data(test_df)
-    
+
     print(train_df.shape, test_df.shape, submit_df.shape)
     print(test_df.dtypes)
 
@@ -73,7 +71,7 @@ def find_best_traj(do_plots=False):
             'fn': 'train_final.csv.gz', 'test': False},
            {'df': train_df.iloc[randperm[320:640], :],
             'fn': 'valid_final.csv.gz', 'test': False}]
-    
+
     outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND',
                  'TAXI_ID', 'TIMESTAMP', 'BEST_LAT', 'BEST_LON', 'AVG_LAT',
                  'AVG_LON', 'DEST_LAT', 'DEST_LON']
@@ -121,7 +119,7 @@ def find_best_traj(do_plots=False):
                             continue
                         n_matching += 1
                         train_traj_ = get_trajectory(tidx, train_df=train_trj_)
-                        n_common = compare_trajectories(traj_, train_traj_, 
+                        n_common = compare_trajectories(traj_, train_traj_,
                                                         mindist=mindist)
                         if n_common == 0:
                             continue

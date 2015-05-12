@@ -25,6 +25,7 @@ LONLIM = (-8.7, -8.5)
 NBINS = 1000
 
 def get_lat_bin(lat, nbins=NBINS):
+    """ get latitude bin """
     if lat < LATLIM[0]:
         return 0
     if lat > LATLIM[1]:
@@ -32,6 +33,7 @@ def get_lat_bin(lat, nbins=NBINS):
     return int((lat-LATLIM[0]) * nbins / (LATLIM[1]-LATLIM[0]))
 
 def get_lon_bin(lon, nbins=NBINS):
+    """ get longitude bin """
     if lon < LONLIM[0]:
         return 0
     if lon > LONLIM[1]:
@@ -39,6 +41,7 @@ def get_lon_bin(lon, nbins=NBINS):
     return int((lon-LONLIM[0]) * nbins / (LONLIM[1]-LONLIM[0]))
 
 def haversine_distance(lat1, lon1, lat2, lon2):
+    """ get Haversine Distance """
     r_earth = 6371.
     dlat = abs(lat1-lat2)*pi/180.
     dlon = abs(lon1-lon2)*pi/180.
@@ -48,7 +51,8 @@ def haversine_distance(lat1, lon1, lat2, lon2):
                                       cos(lat1)*cos(lat2)*sin(dlon/2.)**2))
     return dist
 
-def lat_lon_box(lat, lon, dist):
+def lat_lon_box(lat, dist):
+    """ find lat/lon box of size dist*2 """
     r_earth = 6371.
     d_2r = dist/(2.*r_earth)
     dlat = 2. * (d_2r)
@@ -58,6 +62,7 @@ def lat_lon_box(lat, lon, dist):
     return abs(dlat), abs(dlon)
 
 def split_polyline(polyline_str):
+    """ Split POLYLINE string """
     latlons = []
     missing = 0
     for idx, latlon in enumerate(polyline_str.split('],[')):
@@ -88,6 +93,7 @@ def split_polyline(polyline_str):
     return latlons
 
 def feature_extraction(is_test=False):
+    """ """
     taxi_stand_latlon = {}
     with gzip.open('metaData_taxistandsID_name_GPSlocation.csv.gz', 'rb') as \
             mfile:
@@ -208,7 +214,7 @@ def get_trajectory(trj_idx=None, train_df=None):
 def compare_trajectories(test_trj, train_trj, mindist=0.05):
     n_common = 0
     for test_lat, test_lon in test_trj:
-        dlat, dlon = lat_lon_box(test_lat, test_lon, mindist*2)
+        dlat, dlon = lat_lon_box(test_lat, mindist*2)
         n_common_tr = 0
         for train_lat, train_lon in train_trj:
             if abs(train_lat-test_lat) > dlat or \
@@ -226,7 +232,7 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
     matching_list = defaultdict(int)
     for idx, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN']//rebinning, row['LONBIN']//rebinning))
-    
+
     for latbin, lonbin in latlon_list:
         cond0 = (train_df['LATBIN']//rebinning) == latbin
         cond1 = (train_df['LONBIN']//rebinning) == latbin
