@@ -207,14 +207,14 @@ def get_trajectory(trj_idx=None, train_df=None):
 def compare_trajectories(test_trj, train_trj):
     n_common = 0
     for test_lat, test_lon in test_trj:
-        dlat, dlon = lat_lon_box(test_lat, test_lon, 0.2)
+        dlat, dlon = lat_lon_box(test_lat, test_lon, 0.1)
         n_common_tr = 0
         for train_lat, train_lon in train_trj:
             if abs(train_lat-test_lat) > dlat or \
                     abs(train_lon-test_lon) > dlon:
                 continue
             dis = haversine_distance(test_lat, test_lon, train_lat, train_lon)
-            if dis < 0.1:
+            if dis < 0.05:
                 n_common_tr += 1
         if n_common_tr > 0:
             n_common += 1
