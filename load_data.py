@@ -101,6 +101,7 @@ def find_best_traj(do_plots=False):
                         continue
                     if tidx in randperm[:640]:
                         continue
+                    print('tidx %d' % tidx)
                     train_traj_ = get_trajectory(tidx, train_df=train_trj_)
                     n_common = compare_trajectories(traj_, train_traj_)
                     if n_common == 0:
