@@ -236,7 +236,6 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
         cond0 = (train_df['LATBIN']//rebinning) == latbin
         cond1 = (train_df['LONBIN']//rebinning) == lonbin
         trj_arr = sorted(train_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
-        print(len(trj_arr))
         for tidx in trj_arr:
             matching_list[tidx] += 1
     return matching_list
