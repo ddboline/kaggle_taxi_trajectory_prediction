@@ -21,25 +21,25 @@ from feature_extraction import get_trajectory, get_matching_list
 
 from feature_extraction import haversine_distance, compare_trajectories
 
-def clean_data(df):
+def clean_data(df_):
     """
         Clean and update DataFrames
     """
-    df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
-    df['DAY_TYPE'] = df['DAY_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
-    df['WEEK'] = df['TIMESTAMP'].apply(lambda x: x % (7*24*3600))
-    df['DAY'] = df['TIMESTAMP'].apply(lambda x: x % (24*3600))
-    df['HOUR'] = df['TIMESTAMP'].apply(lambda x: x % (3600))
-    df.loc[(df['ORIGIN_CALL'].isnull()), 'ORIGIN_CALL'] = -1
-    df.loc[(df['ORIGIN_STAND'].isnull()), 'ORIGIN_STAND'] = -1
+    df_['CALL_TYPE'] = df_['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
+    df_['DAY_TYPE'] = df_['DAY_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
+    df_['WEEK'] = df_['TIMESTAMP'].apply(lambda x: x % (7*24*3600))
+    df_['DAY'] = df_['TIMESTAMP'].apply(lambda x: x % (24*3600))
+    df_['HOUR'] = df_['TIMESTAMP'].apply(lambda x: x % (3600))
+    df_.loc[(df_['ORIGIN_CALL'].isnull()), 'ORIGIN_CALL'] = -1
+    df_.loc[(df_['ORIGIN_STAND'].isnull()), 'ORIGIN_STAND'] = -1
     for col in ('ORIGIN_CALL', 'ORIGIN_STAND', 'MISSING_DATA',
                 'TRAJECTORY_IDX'):
-        df[col] = df[col].astype(int)
-    df = df.dropna(axis=0, subset=['ORIGIN_LAT', 'ORIGIN_LON', 'DEST_LAT',
+        df_[col] = df_[col].astype(int)
+    df_ = df_.dropna(axis=0, subset=['ORIGIN_LAT', 'ORIGIN_LON', 'DEST_LAT',
                                    'DEST_LON'])
 
-#    df = df.drop(labels=['DAY_TYPE', 'TRIP_ID'], axis=1)
-    return df
+#    df_ = df_.drop(labels=['DAY_TYPE', 'TRIP_ID'], axis=1)
+    return df_
 
 def find_best_traj(do_plots=False):
     """
@@ -77,14 +77,14 @@ def find_best_traj(do_plots=False):
                  'AVG_LON', 'DEST_LAT', 'DEST_LON']
 
     for dfs_dict in dfs:
-        df = dfs_dict['df']
+        df_ = dfs_dict['df']
         outfname = dfs_dict['fn']
         is_test = dfs_dict['test']
         outfile = gzip.open(outfname, 'wb')
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(outlabels)
         print(outfname)
-        for idx, row in df.iterrows():
+        for idx, row in df_.iterrows():
             if idx % 10 == 0:
                 print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']

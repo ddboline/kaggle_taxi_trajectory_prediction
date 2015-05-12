@@ -229,7 +229,7 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
     """ Get list of matching Trajectories """
     latlon_list = set()
     matching_list = defaultdict(int)
-    for idx, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
+    for _, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN']//rebinning, row['LONBIN']//rebinning))
 
     for latbin, lonbin in latlon_list:
