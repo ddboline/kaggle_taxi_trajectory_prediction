@@ -134,9 +134,6 @@ def find_best_traj(do_plots=False):
                 else:
                     mindist += 0.05
                     rebin += 10
-            common_traj = get_common_trajectories(tidx)
-            if len(common_traj) == 0:
-                common_traj = get_common_trajectories(tidx, 0.1, 10)
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])
