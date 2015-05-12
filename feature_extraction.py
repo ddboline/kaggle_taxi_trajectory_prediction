@@ -215,7 +215,6 @@ def compare_trajectories(test_trj, train_trj, mindist=0.05):
         dlat, dlon = lat_lon_box(test_lat, mindist*2)
         n_common_tr = 0
         for train_lat, train_lon in train_trj:
-            print(train_lat, test_lat, train_lon, test_lon)
             if abs(train_lat-test_lat) > dlat or \
                     abs(train_lon-test_lon) > dlon:
                 continue
@@ -234,8 +233,8 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
         latlon_list.add((row['LATBIN']//rebinning, row['LONBIN']//rebinning))
 
     for latbin, lonbin in latlon_list:
-        cond0 = (train_df['LATBIN']) == latbin
-        cond1 = (train_df['LONBIN']) == lonbin
+        cond0 = (train_df['LATBIN']//rebinning) == latbin
+        cond1 = (train_df['LONBIN']//rebinning) == lonbin
         trj_arr = sorted(train_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         print(len(trj_arr))
         for tidx in trj_arr:
