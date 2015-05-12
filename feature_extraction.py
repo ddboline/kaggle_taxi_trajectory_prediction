@@ -232,6 +232,8 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
     for _, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN']//rebinning, row['LONBIN']//rebinning))
 
+    print(latlon_list)
+
     for latbin, lonbin in latlon_list:
         cond0 = (train_df['LATBIN']//rebinning) == latbin
         cond1 = (train_df['LONBIN']//rebinning) == lonbin
