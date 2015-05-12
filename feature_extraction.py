@@ -69,11 +69,7 @@ def split_polyline(polyline_str):
         latlon = latlon.replace('[[', '').replace(']]', '')
         if latlon == '[]':
             continue
-        try:
-            lon, lat = map(float, latlon.split(','))
-        except:
-            print(type(latlon), latlon)
-            exit(0)
+        lon, lat = [float(x) for x in latlon.split(',')]
 
         dis = 0
         if len(latlons) > 0:
@@ -93,7 +89,7 @@ def split_polyline(polyline_str):
     return latlons
 
 def feature_extraction(is_test=False):
-    """ """
+    """ extract features """
     taxi_stand_latlon = {}
     with gzip.open('metaData_taxistandsID_name_GPSlocation.csv.gz', 'rb') as \
             mfile:
@@ -208,10 +204,12 @@ def feature_extraction(is_test=False):
     return
 
 def get_trajectory(trj_idx=None, train_df=None):
+    """ Get trajectory """
     return train_df[train_df['TRAJECTORY_IDX'] == trj_idx]\
                          [['LAT', 'LON']].values
 
 def compare_trajectories(test_trj, train_trj, mindist=0.05):
+    """ Compare two Trajectories"""
     n_common = 0
     for test_lat, test_lon in test_trj:
         dlat, dlon = lat_lon_box(test_lat, mindist*2)
@@ -228,6 +226,7 @@ def compare_trajectories(test_trj, train_trj, mindist=0.05):
     return n_common
 
 def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
+    """ Get list of matching Trajectories """
     latlon_list = set()
     matching_list = defaultdict(int)
     for idx, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
@@ -235,7 +234,7 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
 
     for latbin, lonbin in latlon_list:
         cond0 = (train_df['LATBIN']//rebinning) == latbin
-        cond1 = (train_df['LONBIN']//rebinning) == latbin
+        cond1 = (train_df['LONBIN']//rebinning) == lonbin
         trj_arr = sorted(train_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
             matching_list[tidx] += 1
