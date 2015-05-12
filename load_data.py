@@ -120,7 +120,7 @@ def find_best_traj(do_plots=False):
                         continue
                     common_traj[tidx] = n_common
                     time_1 = time.clock()
-                    print('time %s' % (time_1-time_0)
+                    print('time %s' % (time_1-time_0))
                     time_0 = time_1
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
