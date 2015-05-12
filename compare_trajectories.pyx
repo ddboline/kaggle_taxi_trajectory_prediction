@@ -30,7 +30,8 @@ def haversine_distance(double lat1, double lon1, double lat2, double lon2):
     return dist
 
 def compare_trajectories(np.ndarray test_trj, np.ndarray train_trj):
-    n_common = 0
+    cdef int n_common = 0, n_common_tr = 0
+    cdef double test_lat, test_lon, train_lat, train_lon, dis
     for idx in range(test_trj.shape[0]):
         test_lat = test_trj[idx, 0]
         test_lon = test_trj[idx, 1]
