@@ -23,14 +23,16 @@ from collections import defaultdict
 LATLIM = (41.1, 41.2)
 LONLIM = (-8.7, -8.5)
 
-def get_lat_bin(lat, nbins=100):
+NBINS = 1000
+
+def get_lat_bin(lat, nbins=NBINS):
     if lat < LATLIM[0]:
         return 0
     if lat > LATLIM[1]:
         return nbins
     return int((lat-LATLIM[0]) * nbins / (LATLIM[1]-LATLIM[0]))
 
-def get_lon_bin(lon, nbins=100):
+def get_lon_bin(lon, nbins=NBINS):
     if lon < LONLIM[0]:
         return 0
     if lon > LONLIM[1]:
@@ -142,8 +144,8 @@ def feature_extraction(is_test=False):
             bin_set = set()
             for idy, lat_lon in enumerate(latlon_points):
                 lat, lon, dis = lat_lon
-                lat_bin = get_lat_bin(lat, nbins=100)
-                lon_bin = get_lon_bin(lon, nbins=100)
+                lat_bin = get_lat_bin(lat)
+                lon_bin = get_lon_bin(lon)
                 bin_set.add((lat_bin, lon_bin))
                 tot_dist += dis
                 row_val = [idx, idy, lat, lon, lat_bin, lon_bin]
