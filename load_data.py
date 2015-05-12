@@ -100,11 +100,13 @@ def find_best_traj(do_plots=False):
                 tedf_ = test_nib
             else:
                 tedf_ = train_nib
-            
-            def get_common_trajectories(tidx, mindist=0.05, rebin=1):
+            mindist = 0.05
+            rebin = 1
+            common_traj = {}
+            while True:
                 match_list_ = get_matching_list(tidx, test_df=tedf_,
-                                                train_df=train_nib)
-                common_traj = {}
+                                                train_df=train_nib,
+                                                rebinning=rebin)
                 time_0 = time.clock()
                 for fidx in range(100):
                     if fidx % 10 == 0:
@@ -127,7 +129,11 @@ def find_best_traj(do_plots=False):
                     print('time %s %s %s' % (time_1-time_0, len(common_traj),
                                              n_matching))
                     time_0 = time_1
-                return common_traj
+                if len(common_traj) > 0:
+                    break
+                else:
+                    mindist += 0.05
+                    rebin += 10
             common_traj = get_common_trajectories(tidx)
             if len(common_traj) == 0:
                 common_traj = get_common_trajectories(tidx, 0.1, 10)
