@@ -77,7 +77,10 @@ def find_best_traj(do_plots=False):
         outfile = gzip.open(outfname, 'wb')
         csv_writer = csv.writer(outfile)
         csv_writer.writerow(outlabels)
+        print(outfname)
         for idx, row in df.iterrows():
+            if idx % 10 == 0:
+                print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']
             if is_test:
                 tdf_ = test_trj
@@ -89,6 +92,8 @@ def find_best_traj(do_plots=False):
                                             train_df=train_nib)
             common_traj = {}
             for fidx in range(100):
+                if fidx % 10 == 0:
+                    print('fidx %d' % fidx)
                 train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz' % fidx,
                                         compression='gzip')
                 for idx_, tidx in enumerate(match_list_):
