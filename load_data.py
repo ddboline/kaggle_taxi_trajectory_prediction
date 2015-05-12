@@ -90,8 +90,8 @@ def find_best_traj(do_plots=False):
             if idx % 10 == 0:
                 print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']
-            if tidx != 4:
-                continue
+#            if tidx != 4:
+#                continue
             if is_test:
                 tdf_ = test_trj
             else:
