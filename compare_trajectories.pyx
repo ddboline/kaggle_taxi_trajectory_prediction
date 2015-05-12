@@ -38,7 +38,7 @@ def compare_trajectories(np.ndarray[DTYPE_t, ndim=2] test_trj, np.ndarray[DTYPE_
     for idx in range(test_trj.shape[0]):
         test_lat = test_trj[idx, 0]
         test_lon = test_trj[idx, 1]
-        dlat, dlon = lat_lon_box(test_lat, test_lon, 0.2)
+        dlat, dlon = lat_lon_box(test_lat, test_lon, 0.1)
         n_common_tr = 0
         for jdx in range(train_trj.shape[0]):
             train_lat = train_trj[jdx, 0]
@@ -47,7 +47,7 @@ def compare_trajectories(np.ndarray[DTYPE_t, ndim=2] test_trj, np.ndarray[DTYPE_
                     np.abs(train_lon-test_lon) > dlon:
                 continue
             dis = haversine_distance(test_lat, test_lon, train_lat, train_lon)
-            if dis < 0.1:
+            if dis < 0.05:
                 n_common_tr += 1
         if n_common_tr > 0:
             n_common += 1
