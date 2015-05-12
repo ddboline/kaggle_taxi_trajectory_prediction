@@ -191,7 +191,7 @@ def feature_extraction(is_test=False):
             csv_writer_idx.writerow(row_val)
             if idx % 10000 == 0:
                 print('processed %d' % idx)
-#            if idx > 1000:
+#            if idx > 10000:
 #                exit(0)
 
     output_file_idx.close()
@@ -200,18 +200,9 @@ def feature_extraction(is_test=False):
         outf.close()
     return
 
-def get_trajectory(trj_idx=None, is_test=False):
-    trajectory = []
-    if is_test:
-        fname = 'test_trj.csv.gz'
-    else:
-        fname = 'train/train_trj_%02d.csv.gz' % (trj_idx % 100)
-    
-    df = pd.read_csv(fname, compression='gzip')
-    trajectory = df[df['TRAJECTORY_IDX'] == trj_idx][['LAT', 'LON']].values
-    del df
-
-    return trajectory
+def get_trajectory(trj_idx=None, train_df=None):
+    return train_df[train_df['TRAJECTORY_IDX'] == trj_idx]\
+                         [['LAT', 'LON']].values
 
 def compare_trajectories(test_trj, train_trj):
     n_common = 0
@@ -229,29 +220,20 @@ def compare_trajectories(test_trj, train_trj):
             n_common += 1
     return n_common
 
-def get_matching_list(trj_idx=None, is_test=False):
-    latlon_list = set()    
+def get_matching_list(tidx=None, test_df=None, train_df=None):
+    latlon_list = set()
     matching_list = defaultdict(int)
-    if is_test:
-        fname = 'test_nib.csv.gz'
-    else:
-        fname = 'train/train_nib_%02.csv.gz' % (trj_idx % 100)
-    df = pd.read_csv(fname, compression='gzip')
-    for idx, row in df[df['TRAJECTORY_IDX'] == trj_idx].iterrows():
+    for idx, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN'], row['LONBIN']))
     
     for latbin, lonbin in latlon_list:
-        fname = 'train_nib.csv.gz'
-        trj_arr = (pd.read_csv(fname, compression='gzip', index_col=False,
-                              header=None)).values
-        for idx in range(trj_arr.shape[0]):
-            tidx = trj_arr[idx, 0]
+        cond0 = train_df['LATBIN'] == latbin
+        cond1 = train_df['LONBIN'] == latbin
+        trj_arr = sorted(train_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
+        for tidx in trj_arr:
             matching_list[tidx] += 1
     return matching_list
 
 if __name__ == '__main__':
     feature_extraction(is_test=False)
     feature_extraction(is_test=True)
-#    describe_trajectory_file()
-#    describe_bins()
-#    pass
