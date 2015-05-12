@@ -112,7 +112,7 @@ def find_best_traj(do_plots=False):
                     train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
                                              % fidx, compression='gzip')
                     n_matching = 0
-                    for idx_, tidx in enumerate(match_list_):
+                    for tidx in match_list_:
                         if tidx % 100 != fidx:
                             continue
                         if tidx in randperm[:640]:
