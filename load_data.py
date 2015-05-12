@@ -112,6 +112,7 @@ def find_best_traj(do_plots=False):
                     train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
                                              % fidx, compression='gzip')
                     n_matching = 0
+                    n_matched = 0
                     for tidx in match_list_:
                         if tidx % 100 != fidx:
                             continue
@@ -124,8 +125,9 @@ def find_best_traj(do_plots=False):
                         if n_common == 0:
                             continue
                         common_traj[tidx] = n_common
+                        n_matched += 1
                     time_1 = time.clock()
-                    print('time %s %s %s' % (time_1-time_0, len(common_traj),
+                    print('time %s %s %s' % (time_1-time_0, n_matched,
                                              n_matching))
                     time_0 = time_1
                 mindist_ *= 2
