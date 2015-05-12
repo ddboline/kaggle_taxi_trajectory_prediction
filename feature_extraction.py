@@ -225,11 +225,11 @@ def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
     latlon_list = set()
     matching_list = defaultdict(int)
     for idx, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
-        latlon_list.add((row['LATBIN'], row['LONBIN']))
+        latlon_list.add((row['LATBIN']//rebinning, row['LONBIN']//rebinning))
     
     for latbin, lonbin in latlon_list:
-        cond0 = train_df['LATBIN']//rebinning == latbin//rebinning
-        cond1 = train_df['LONBIN']//rebinning == latbin//rebinning
+        cond0 = (train_df['LATBIN']//rebinning) == latbin
+        cond1 = (train_df['LONBIN']//rebinning) == latbin
         trj_arr = sorted(train_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
             matching_list[tidx] += 1

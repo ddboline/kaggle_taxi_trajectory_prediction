@@ -90,6 +90,8 @@ def find_best_traj(do_plots=False):
             if idx % 10 == 0:
                 print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']
+            if tidx != 4:
+                continue
             if is_test:
                 tdf_ = test_trj
             else:
@@ -121,7 +123,8 @@ def find_best_traj(do_plots=False):
                             continue
                         n_matching += 1
                         train_traj_ = get_trajectory(tidx, train_df=train_trj_)
-                        n_common = compare_trajectories(traj_, train_traj_)
+                        n_common = compare_trajectories(traj_, train_traj_, 
+                                                        mindist=mindist)
                         if n_common == 0:
                             continue
                         common_traj[tidx] = n_common
@@ -132,8 +135,8 @@ def find_best_traj(do_plots=False):
                 if len(common_traj) > 0:
                     break
                 else:
-                    mindist += 0.05
-                    rebin += 10
+                    mindist *= 2
+                    rebin *= 10
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])
