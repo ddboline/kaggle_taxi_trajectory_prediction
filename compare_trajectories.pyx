@@ -17,12 +17,12 @@ def lat_lon_box(double lat, double lon, double dist):
     cdef double dlon = 2. * np.arcsin((np.sin(d_2r))/(np.cos(lat)))
     dlat *= 180./np.pi
     dlon *= 180./np.pi
-    return abs(dlat), abs(dlon)
+    return np.abs(dlat), np.abs(dlon)
 
 def haversine_distance(double lat1, double lon1, double lat2, double lon2):
     cdef double r_earth = 6371.
-    cdef double dlat = abs(lat1-lat2)*np.pi/180.
-    cdef double dlon = abs(lon1-lon2)*np.pi/180.
+    cdef double dlat = np.abs(lat1-lat2)*np.pi/180.
+    cdef double dlon = np.abs(lon1-lon2)*np.pi/180.
     lat1 *= np.pi/180.
     lat2 *= np.pi/180.
     cdef double dist = 2. * r_earth * np.arcsin(np.sqrt(np.sin(dlat/2.)**2 +
@@ -40,8 +40,8 @@ def compare_trajectories(np.ndarray test_trj, np.ndarray train_trj):
         for jdx in range(train_trj.shape[0]):
             train_lat = train_trj[jdx, 0]
             train_lon = train_trj[jdx, 1]
-            if abs(train_lat-test_lat) > dlat or \
-                    abs(train_lon-test_lon) > dlon:
+            if np.abs(train_lat-test_lat) > dlat or \
+                    np.abs(train_lon-test_lon) > dlon:
                 continue
             dis = haversine_distance(test_lat, test_lon, train_lat, train_lon)
             if dis < 0.1:
