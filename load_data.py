@@ -21,6 +21,13 @@ import csv
 from feature_extraction import get_trajectory, get_matching_list, \
                                compare_trajectories, haversine_distance
 
+try:
+    import pyximport
+    pyximport.install()
+    from compare_trajectories import compare_trajectories
+except ImportError:
+    from feature_extraction import compare_trajectories
+
 def clean_data(df):
     df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
     df['DAY_TYPE'] = df['DAY_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
@@ -88,7 +95,11 @@ def find_best_traj(do_plots=False):
                 tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % tidx,
                                    compression='gzip')
             traj_ = get_trajectory(tidx, train_df=tdf_)
-            match_list_ = get_matching_list(tidx, test_df=test_nib,
+            if is_test:
+                tedf_ = test_nib
+            else:
+                tedf_ = train_nib
+            match_list_ = get_matching_list(tidx, test_df=tedf_,
                                             train_df=train_nib)
             common_traj = {}
             for fidx in range(100):
