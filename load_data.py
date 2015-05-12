@@ -21,13 +21,13 @@ import time
 #from feature_extraction import LATLIM, LONLIM
 from feature_extraction import get_trajectory, get_matching_list
 
-from feature_extraction import haversine_distance, compare_trajectories
-#try:
-#    import pyximport
-#    pyximport.install()
-#    from compare_trajectories import haversine_distance, compare_trajectories
-#except ImportError:
-#    from feature_extraction import haversine_distance, compare_trajectories
+#from feature_extraction import haversine_distance, compare_trajectories
+try:
+    import pyximport
+    pyximport.install()
+    from compare_trajectories import haversine_distance, compare_trajectories
+except ImportError:
+    from feature_extraction import haversine_distance, compare_trajectories
 
 def clean_data(df):
     df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
@@ -120,7 +120,7 @@ def find_best_traj(do_plots=False):
                         continue
                     common_traj[tidx] = n_common
                     time_1 = time.clock()
-                    print('time %s' % time_1-time_0)
+                    print('time %s' % (time_1-time_0)
                     time_0 = time_1
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
