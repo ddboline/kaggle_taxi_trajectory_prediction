@@ -21,6 +21,12 @@ from feature_extraction import get_trajectory, get_matching_list
 
 from feature_extraction import haversine_distance, compare_trajectories
 
+import multiprocessing
+
+def compare_trajectories_parallel(args):
+    test_trj, train_trj, mindist = args
+    return compare_trajectories(test_trj, train_trj, mindist)
+
 def clean_data(df_):
     """
         Clean and update DataFrames
@@ -45,6 +51,13 @@ def find_best_traj(do_plots=False):
     """
         Find the best trajectories from "template" sample
     """
+    ncpu = len(filter(lambda x: x.find('processor') == 0,
+                      open('/proc/cpuinfo')
+                      .read().split('\n')))
+    print('ncpu', ncpu)
+
+    pool = multiprocessing.Pool(ncpu*2)
+
     train_df = pd.read_csv('train_idx.csv.gz', compression='gzip')
     test_df = pd.read_csv('test_idx.csv.gz', compression='gzip')
     submit_df = pd.read_csv('sampleSubmission.csv.gz', compression='gzip')
@@ -113,6 +126,7 @@ def find_best_traj(do_plots=False):
                                              % fidx, compression='gzip')
                     n_matching = 0
                     n_matched = 0
+                    train_trj_list = []
                     for tidx in match_list_:
                         if tidx % 100 != fidx:
                             continue
@@ -120,8 +134,11 @@ def find_best_traj(do_plots=False):
                             continue
                         n_matching += 1
                         train_traj_ = get_trajectory(tidx, train_df=train_trj_)
-                        n_common = compare_trajectories(traj_, train_traj_,
-                                                        mindist=mindist_)
+                        train_trj_list.append((traj_, train_traj_, mindist_))
+
+                    for n_common in pool.imap_unordered(
+                                            compare_trajectories_parallel,
+                                            train_trj_list):
                         if n_common == 0:
                             continue
                         common_traj[tidx] = n_common
