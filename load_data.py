@@ -139,8 +139,8 @@ def find_best_traj(do_plots=False):
             best_lon = float(train_df[cond]['DEST_LON'])
             top_lats = []
             top_lons = []
-            for k, v in sort_list[-10:]:
-                cond = train_df['TRAJECTORY_IDX'] == k
+            for key, _ in sort_list[-10:]:
+                cond = train_df['TRAJECTORY_IDX'] == key
                 top_lats.append(float(train_df[cond]['DEST_LAT']))
                 top_lons.append(float(train_df[cond]['DEST_LON']))
             avg_lat = np.mean(top_lats)
