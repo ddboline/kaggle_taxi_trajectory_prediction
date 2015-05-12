@@ -6,6 +6,7 @@ Created on Tue May 12 07:45:58 2015
 """
 import numpy as np
 cimport numpy as np
+cimport cython
 
 DTYPE = np.float64
 ctypedef np.float64_t DTYPE_t
@@ -29,6 +30,7 @@ def haversine_distance(double lat1, double lon1, double lat2, double lon2):
                                       np.cos(lat1)*np.cos(lat2)*np.sin(dlon/2.)**2))
     return dist
 
+@cython.boundscheck(False)
 def compare_trajectories(np.ndarray[DTYPE_t, ndim=2] test_trj, np.ndarray[DTYPE_t, ndim=2] train_trj):
     cdef int n_common = 0, n_common_tr = 0
     cdef double test_lat, test_lon, train_lat, train_lon, dis
