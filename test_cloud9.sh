@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for F in train_idx.csv.gz train_nib.csv.gz test_idx.csv.gz test_nib.csv.gz test_trj.csv.gz;
+for F in train_idx.csv.gz train_nib.csv.gz test_idx.csv.gz test_nib.csv.gz test_trj.csv.gz sampleSubmission.csv.gz;
 do
     scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/kaggle_taxi_trajectory_prediction/$F .
 done
