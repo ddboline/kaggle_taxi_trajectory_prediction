@@ -18,15 +18,14 @@ import csv
 
 #from feature_extraction import haversine_distance
 #from feature_extraction import LATLIM, LONLIM
-from feature_extraction import get_trajectory, get_matching_list, \
-                               compare_trajectories, haversine_distance
+from feature_extraction import get_trajectory, get_matching_list
 
 try:
     import pyximport
     pyximport.install()
-    from compare_trajectories import compare_trajectories
+    from compare_trajectories import haversine_distance, compare_trajectories
 except ImportError:
-    from feature_extraction import compare_trajectories
+    from feature_extraction import haversine_distance, compare_trajectories
 
 def clean_data(df):
     df['CALL_TYPE'] = df['CALL_TYPE'].map({'A': 0, 'B': 1, 'C': 2})
