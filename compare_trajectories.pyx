@@ -34,6 +34,7 @@ def haversine_distance(double lat1, double lon1, double lat2, double lon2):
 def compare_trajectories(np.ndarray[DTYPE_t, ndim=2] test_trj, np.ndarray[DTYPE_t, ndim=2] train_trj):
     cdef int n_common = 0, n_common_tr = 0
     cdef double test_lat, test_lon, train_lat, train_lon, dis
+    cdef unsigned int idx, jdx
     for idx in range(test_trj.shape[0]):
         test_lat = test_trj[idx, 0]
         test_lon = test_trj[idx, 1]
