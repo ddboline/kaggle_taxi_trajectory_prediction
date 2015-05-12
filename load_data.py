@@ -109,7 +109,7 @@ def find_best_traj(do_plots=False):
                     print('fidx %d' % fidx)
                 train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz' % fidx,
                                         compression='gzip')
-                
+                print('match_list', len(match_list_))
                 for idx_, tidx in enumerate(match_list_):
                     if tidx % 100 != fidx:
                         continue
