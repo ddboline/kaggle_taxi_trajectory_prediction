@@ -246,6 +246,9 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
             matching_list[tidx] += 1
+    for k in matching_list:
+        if matching_list[k] <= 2:
+            matching_list.pop(k)
     return matching_list
 
 if __name__ == '__main__':
