@@ -44,7 +44,7 @@ def find_common_trajectories(args):
         common_traj[tidx] = n_common
         n_matched += 1
     time_1 = time.clock()
-    print('time %f %s %s %s' % (time_1-time_0, fidx, n_matched, n_matching))
+    print('time %s %s %s %s' % (time_1-time_0, fidx, n_matched, n_matching))
     return common_traj
 
 def clean_data(df_):
