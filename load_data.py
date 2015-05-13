@@ -28,6 +28,7 @@ def find_common_trajectories(args):
     time_0 = time.clock()
     train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
                              % fidx, compression='gzip')
+    n_match_list = len(match_list_)
     n_matching = 0
     n_matched = 0
     common_traj = {}
@@ -44,7 +45,8 @@ def find_common_trajectories(args):
         common_traj[tidx] = n_common
         n_matched += 1
     time_1 = time.clock()
-    print('time %s %s %s %s' % (time_1-time_0, fidx, n_matched, n_matching))
+    print('time %s %s %s %s' % (time_1-time_0, fidx, n_match_list, n_matching,
+                                n_matched))
     return common_traj
 
 def clean_data(df_):

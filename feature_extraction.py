@@ -248,9 +248,6 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         for tidx in trj_arr:
             matching_list[tidx] += 1
             tidx_list.add(tidx)
-    if len(matching_list) == 0:
-        print('FAILURE!!!')
-        exit(0)
     number_matching = 0
     min_number_matched = 4
     while number_matching == 0 and len(matching_list) > 0:
