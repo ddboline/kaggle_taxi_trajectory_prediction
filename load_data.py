@@ -88,7 +88,7 @@ def find_best_traj(do_plots=False):
     train_df = clean_data(train_df)
     test_df = clean_data(test_df)
 
-    print(train_df.shape, test_df.shape, submit_df.shape)
+    print('shape', train_df.shape, test_df.shape, submit_df.shape)
     print(test_df.dtypes)
 
     if do_plots:
