@@ -172,6 +172,7 @@ def find_best_traj(do_plots=False):
                     row_dict[k] = int(row_dict[k])
             row_val = [row_dict[k] for k in outlabels]
             csv_writer.writerow(row_val)
+            outfile.flush()
 #            if idx == 1:
 #                exit(0)
     return
