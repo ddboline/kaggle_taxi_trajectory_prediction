@@ -108,9 +108,10 @@ def find_best_traj(do_plots=False):
            {'df': train_df.iloc[randperm[320:640], :],
             'fn': 'valid_final.csv.gz', 'test': False}]
 
-    outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND',
-                 'TAXI_ID', 'TIMESTAMP', 'BEST_LAT', 'BEST_LON', 'AVG_LAT',
-                 'AVG_LON', 'DEST_LAT', 'DEST_LON']
+    outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND', 
+                 'NMINMATCH',
+                 'TAXI_ID', 'TIMESTAMP', 'BEST_LAT', 'BEST_LON',
+                 'AVG_LAT', 'AVG_LON', 'DEST_LAT', 'DEST_LON']
 
     for dfs_dict in dfs:
         df_ = dfs_dict['df']
@@ -140,10 +141,10 @@ def find_best_traj(do_plots=False):
                 tedf_ = train_nib
             common_traj = {}
             skiplist_ = tuple(randperm[:640])
-            match_list_ = get_matching_list(tidx, te_df=tedf_,
-                                            tr_df=train_nib,
-                                            skiplist=skiplist_)
-            print('match_list_', len(match_list_))
+            match_list_, min_n_match = get_matching_list(tidx, te_df=tedf_,
+                                                         tr_df=train_nib,
+                                                         skiplist=skiplist_)
+            print('match_list_', len(match_list_), min_n_match)
             match_list_parallel = [{} for i in range(100)]
             for tidx in match_list_:
                 match_list_parallel[tidx%100][tidx] = match_list_[tidx]
@@ -173,6 +174,7 @@ def find_best_traj(do_plots=False):
             row_dict['BEST_LON'] = best_lon
             row_dict['AVG_LAT'] = avg_lat
             row_dict['AVG_LON'] = avg_lon
+            row_dict['NMINMATCH'] = min_n_match
             for k in row_dict:
                 if k in ('ORIGIN_LAT', 'ORIGIN_LON', 'TOTAL_DISTANCE',
                          'BEST_LAT', 'BEST_LON', 'AVG_LAT', 'AVG_LON',
