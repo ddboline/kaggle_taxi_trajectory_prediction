@@ -241,15 +241,18 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
     for _, row in te_df[te_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN'], row['LONBIN']))
 
-    for latbin, lonbin in latlon_list:
-        cond0 = tr_df['LATBIN'] == latbin
-        cond1 = tr_df['LONBIN'] == lonbin
-        trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
-        for tidx in trj_arr:
-            if tidx in skiplist:
-                continue
-            matching_list[tidx] += 1
-            tidx_list.add(tidx)
+    rebin = 1
+    while len(matching_list) == 0:
+        for latbin, lonbin in latlon_list:
+            cond0 = (tr_df['LATBIN']//rebin) == (latbin//rebin)
+            cond1 = (tr_df['LONBIN']//rebin) == (lonbin//rebin)
+            trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
+            for tidx in trj_arr:
+                if tidx in skiplist:
+                    continue
+                matching_list[tidx] += 1
+                tidx_list.add(tidx)
+        rebin *= 10
     number_matching = 0
     min_number_matched = 4
     while number_matching == 0 and len(matching_list) > 0:
