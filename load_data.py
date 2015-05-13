@@ -25,6 +25,7 @@ import multiprocessing
 
 def find_common_trajectories(args):
     traj_, fidx, match_list_, skiplist = args
+    print(traj_)
     time_0 = time.clock()
     train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
                              % fidx, compression='gzip')
