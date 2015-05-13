@@ -236,7 +236,7 @@ def compare_trajectories(test_trj, train_trj, mindist=0.1):
 def get_matching_list(tidx=None, te_df=None, tr_df=None):
     """ Get list of matching Trajectories """
     latlon_list = set()
-    matching_list_ = defaultdict(int)
+    matching_list = defaultdict(int)
     for _, row in te_df[te_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN'], row['LONBIN']))
 
@@ -245,15 +245,7 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         cond1 = tr_df['LONBIN'] == lonbin
         trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
-            matching_list_[tidx] += 1
-    matching_list = {}
-    min_count = len(latlon_list)
-    while len(matching_list) == 0 and len(matching_list_) > 0:
-        for tidx, count in matching_list_.items():
-            if count >= min_count:
-                matching_list[tidx] = count
-        min_count -= 1
-    print('matchin_list_', len(matching_list_), len(matching_list))
+            matching_list[tidx] += 1
     return matching_list
 
 if __name__ == '__main__':
