@@ -248,9 +248,14 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         for tidx in trj_arr:
             matching_list[tidx] += 1
             tidx_list.add(tidx)
-    for k in tidx_list:
-        if matching_list[k] <= 2:
-            matching_list.pop(k)
+    number_matching = 0
+    min_number_matched = 4
+    while number_matching == 0 and len(matching_list) > 0:
+        for k in tidx_list:
+            if matching_list[k] <= min_number_matched:
+                matching_list.pop(k)
+                number_matching += 1
+        min_number_matched -= 1
     return matching_list
 
 if __name__ == '__main__':
