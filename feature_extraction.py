@@ -236,13 +236,13 @@ def compare_trajectories(test_trj, train_trj, mindist=0.1):
 def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
     """ Get list of matching Trajectories """
     latlon_list = set()
-    matching_list = defaultdict(int)
+    matching_list_ = defaultdict(int)
     tidx_list = set()
     for _, row in te_df[te_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN'], row['LONBIN']))
 
     rebin = 1
-    while len(matching_list) == 0:
+    while len(matching_list_) == 0:
         for latbin, lonbin in latlon_list:
             cond0 = (tr_df['LATBIN']//rebin) == (latbin//rebin)
             cond1 = (tr_df['LONBIN']//rebin) == (lonbin//rebin)
@@ -250,16 +250,16 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
             for tidx in trj_arr:
                 if tidx in skiplist:
                     continue
-                matching_list[tidx] += 1
+                matching_list_[tidx] += 1
                 tidx_list.add(tidx)
         rebin *= 10
-    print('matching_list', len(matching_list))
+    matching_list = {}
     number_matching = 0
     min_number_matched = 4
-    while number_matching == 0 and len(matching_list) > 0:
+    while number_matching == 0 and len(matching_list_) > 0:
         for k in tidx_list:
-            if matching_list[k] <= min_number_matched:
-                matching_list.pop(k)
+            if matching_list_[k] > min_number_matched:
+                matching_list[k] = matching_list_[k]
                 number_matching += 1
         min_number_matched -= 1
     return matching_list
