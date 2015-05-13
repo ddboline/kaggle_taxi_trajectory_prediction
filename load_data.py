@@ -110,8 +110,8 @@ def find_best_traj(do_plots=False):
             'fn': 'valid_final.csv.gz', 'test': False}]
 
     outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND', 
-                 'NMINMATCH',
-                 'TAXI_ID', 'TIMESTAMP', 'BEST_LAT', 'BEST_LON',
+                 'NMINMATCH', 'TAXI_ID', 'TIMESTAMP', 
+                 'ORIGIN_LAT', 'ORIGIN_LON', 'BEST_LAT', 'BEST_LON',
                  'AVG_LAT', 'AVG_LON', 'DEST_LAT', 'DEST_LON']
 
     for dfs_dict in dfs:
