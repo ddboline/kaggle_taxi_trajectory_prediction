@@ -237,6 +237,7 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
     """ Get list of matching Trajectories """
     latlon_list = set()
     matching_list = defaultdict(int)
+    tidx_list = set()
     for _, row in te_df[te_df['TRAJECTORY_IDX'] == tidx].iterrows():
         latlon_list.add((row['LATBIN'], row['LONBIN']))
 
@@ -246,7 +247,8 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
             matching_list[tidx] += 1
-    for k in matching_list:
+            tidx_list.add(tidx)
+    for k in tidx_list:
         if matching_list[k] <= 2:
             matching_list.pop(k)
     return matching_list
