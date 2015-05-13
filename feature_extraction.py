@@ -254,13 +254,11 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
                 tidx_list.add(tidx)
         rebin *= 10
     matching_list = {}
-    number_matching = 0
-    min_number_matched = 4
-    while number_matching == 0 and len(matching_list_) > 0:
+    min_number_matched = 5
+    while len(matching_list) == 0 and len(matching_list_) > 0:
         for k in tidx_list:
-            if matching_list_[k] > min_number_matched:
+            if matching_list_[k] >= min_number_matched:
                 matching_list[k] = matching_list_[k]
-                number_matching += 1
         min_number_matched -= 1
     return matching_list
 
