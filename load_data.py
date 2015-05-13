@@ -140,6 +140,7 @@ def find_best_traj(do_plots=False):
             match_list_ = get_matching_list(tidx, te_df=tedf_,
                                             tr_df=train_nib,
                                             skiplist=skiplist_)
+            print('match_list_', len(match_list_))
             match_list_parallel = [{} for i in range(100)]
             for tidx in match_list_:
                 match_list_parallel[tidx%100][tidx] = match_list_[tidx]
