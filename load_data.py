@@ -124,8 +124,8 @@ def find_best_traj(do_plots=False):
         for idx, row in df_.iterrows():
 #            if idx < 4:
 #                continue
-            if idx >= 5:
-                exit(0)
+#            if idx >= 5:
+#                exit(0)
             if idx % 10 == 0:
                 print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']
