@@ -246,6 +246,7 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
             matching_list_[tidx] += 1
+    print('matchin_list_', len(matching_list_))
     matching_list = {}
     min_count = len(latlon_list)
     while len(matching_list) == 0 and len(matching_list_) > 0:
