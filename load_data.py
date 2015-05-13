@@ -120,7 +120,7 @@ def find_best_traj(do_plots=False):
         csv_writer.writerow(outlabels)
         print(outfname)
         for idx, row in df_.iterrows():
-            if idx < 3:
+            if idx < 4:
                 continue
             if idx % 10 == 0:
                 print('test %d' % idx)
