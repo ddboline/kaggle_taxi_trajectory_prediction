@@ -253,6 +253,7 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
                 matching_list[tidx] += 1
                 tidx_list.add(tidx)
         rebin *= 10
+    print('matching_list', len(matching_list))
     number_matching = 0
     min_number_matched = 4
     while number_matching == 0 and len(matching_list) > 0:
