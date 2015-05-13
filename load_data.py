@@ -168,7 +168,7 @@ def find_best_traj(do_plots=False):
             avg_lat = np.mean(top_lats)
             avg_lon = np.mean(top_lons)
             dist = haversine_distance(best_lat, best_lon, avg_lat, avg_lon)
-            print('%s' % dist)
+            print('best-avg dist %s' % dist)
             row_dict = dict(row)
             row_dict['BEST_LAT'] = best_lat
             row_dict['BEST_LON'] = best_lon
