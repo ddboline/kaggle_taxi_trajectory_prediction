@@ -136,7 +136,7 @@ def find_best_traj(do_plots=False):
                                             tr_df=train_nib)
             idy = 0
             for k, v in match_list_.items():
-                if v > 2:
+                if v > 3:
                     print(idy, k, match_list_[k])
                     idy += 1
             exit(0)
