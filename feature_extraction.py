@@ -260,7 +260,7 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
             if matching_list_[k] >= min_number_matched:
                 matching_list[k] = matching_list_[k]
         min_number_matched -= 1
-    return matching_list, min_number_matched
+    return matching_list, (min_number_matched+1)
 
 if __name__ == '__main__':
     feature_extraction(is_test=False)
