@@ -118,6 +118,8 @@ def find_best_traj(do_plots=False):
         csv_writer.writerow(outlabels)
         print(outfname)
         for idx, row in df_.iterrows():
+            if idx < 3:
+                continue
             if idx % 10 == 0:
                 print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']
@@ -173,8 +175,8 @@ def find_best_traj(do_plots=False):
             row_val = [row_dict[k] for k in outlabels]
             csv_writer.writerow(row_val)
             outfile.flush()
-#            if idx == 1:
-#                exit(0)
+            if idx > 6:
+                exit(0)
     return
 
 if __name__ == '__main__':
