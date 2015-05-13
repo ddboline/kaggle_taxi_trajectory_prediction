@@ -25,7 +25,6 @@ import multiprocessing
 
 def find_common_trajectories(args):
     traj_, fidx, match_list_, skiplist = args
-    print(len(match_list_), len(skiplist))
     time_0 = time.clock()
     train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
                              % fidx, compression='gzip')
@@ -45,8 +44,7 @@ def find_common_trajectories(args):
         common_traj[tidx] = n_common
         n_matched += 1
     time_1 = time.clock()
-    print('time %s %s %s' % (time_1-time_0, n_matched,
-                             n_matching))
+    print('time %d %s %s %s' % (time_1-time_0, fidx, n_matched, n_matching))
     return common_traj
 
 def clean_data(df_):
@@ -78,7 +76,7 @@ def find_best_traj(do_plots=False):
                       .read().split('\n')))
     print('ncpu', ncpu)
 
-    pool = multiprocessing.Pool(ncpu*2)
+    pool = multiprocessing.Pool(ncpu)
 
     train_df = pd.read_csv('train_idx.csv.gz', compression='gzip')
     test_df = pd.read_csv('test_idx.csv.gz', compression='gzip')
@@ -136,6 +134,8 @@ def find_best_traj(do_plots=False):
             common_traj = {}
             match_list_ = get_matching_list(tidx, te_df=tedf_,
                                             tr_df=train_nib)
+            for idy, k in enumerate(match_list_):
+                print(idy, k, match_list_[k])
             match_list_parallel = [{} for i in range(100)]
             for tidx in match_list_:
                 match_list_parallel[tidx%100][tidx] = match_list_[tidx]
