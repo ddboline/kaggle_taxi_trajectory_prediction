@@ -138,7 +138,7 @@ def find_best_traj(do_plots=False):
                                             tr_df=train_nib)
             match_list_parallel = [{} for i in range(100)]
             for tidx in match_list_:
-                match_list_parallel[tidx%100] = match_list_[tidx]
+                match_list_parallel[tidx%100][tidx] = match_list_[tidx]
             skiplist = tuple(randperm[:640])
             parallel_args = [(traj_, i, match_list_parallel[i], skiplist)
                              for i in range(100)]
