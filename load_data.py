@@ -45,8 +45,9 @@ def find_common_trajectories(args):
         common_traj[tidx] = n_common
         n_matched += 1
     time_1 = time.clock()
-    print('time %s %s %s %s %s' % (time_1-time_0, fidx, n_match_list, n_matching,
-                                n_matched))
+    if fidx % 10 == 0:
+        print('time %s %s %s %s %s' % (time_1-time_0, fidx, n_match_list,
+                                       n_matching, n_matched))
     return common_traj
 
 def clean_data(df_):
@@ -122,6 +123,8 @@ def find_best_traj(do_plots=False):
         for idx, row in df_.iterrows():
 #            if idx < 4:
 #                continue
+            if idx >= 5:
+                exit(0)
             if idx % 10 == 0:
                 print('test %d' % idx)
             tidx = row['TRAJECTORY_IDX']
@@ -180,8 +183,6 @@ def find_best_traj(do_plots=False):
             row_val = [row_dict[k] for k in outlabels]
             csv_writer.writerow(row_val)
             outfile.flush()
-            if idx > 6:
-                exit(0)
     return
 
 if __name__ == '__main__':
