@@ -23,9 +23,30 @@ from feature_extraction import haversine_distance, compare_trajectories
 
 import multiprocessing
 
-def compare_trajectories_parallel(args):
-    tidx, test_trj, train_trj, mindist = args
-    return tidx, compare_trajectories(test_trj, train_trj, mindist)
+def find_common_trajectories(args):
+    traj_, fidx, match_list_, skiplist = args
+    time_0 = time.clock()
+    train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
+                             % fidx, compression='gzip')
+    n_matching = 0
+    n_matched = 0
+    common_traj = {}
+    for tidx in match_list_:
+        if tidx % 100 != fidx:
+            continue
+        if tidx in skiplist:
+            continue
+        n_matching += 1
+        train_traj_ = get_trajectory(tidx, tr_df=train_trj_)
+        n_common = compare_trajectories(traj_, train_traj_, mindist=0.1)
+        if n_common == 0:
+            continue
+        common_traj[tidx] = n_common
+        n_matched += 1
+    time_1 = time.clock()
+    print('time %s %s %s' % (time_1-time_0, n_matched,
+                             n_matching))
+    return common_traj
 
 def clean_data(df_):
     """
@@ -106,50 +127,24 @@ def find_best_traj(do_plots=False):
             else:
                 tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % tidx,
                                    compression='gzip')
-            traj_ = get_trajectory(tidx, train_df=tdf_)
+            traj_ = get_trajectory(tidx, tr_df=tdf_)
             if is_test:
                 tedf_ = test_nib
             else:
                 tedf_ = train_nib
-            mindist_ = 0.05
-            rebin = 1
             common_traj = {}
-            while len(common_traj) == 0:
-                match_list_ = get_matching_list(tidx, test_df=tedf_,
-                                                train_df=train_nib,
-                                                rebinning=rebin)
-                time_0 = time.clock()
-                for fidx in range(100):
-                    if fidx % 10 == 0:
-                        print('fidx %d' % fidx)
-                    train_trj_ = pd.read_csv('train/train_trj_%02d.csv.gz'
-                                             % fidx, compression='gzip')
-                    n_matching = 0
-                    n_matched = 0
-                    train_trj_list = []
-                    for tidx in match_list_:
-                        if tidx % 100 != fidx:
-                            continue
-                        if tidx in randperm[:640]:
-                            continue
-                        n_matching += 1
-                        train_traj_ = get_trajectory(tidx, train_df=train_trj_)
-                        train_trj_list.append((tidx, traj_, train_traj_,
-                                               mindist_))
-
-                    for tidx, n_common in pool.imap_unordered(
-                                            compare_trajectories_parallel,
-                                            train_trj_list):
-                        if n_common == 0:
-                            continue
-                        common_traj[tidx] = n_common
-                        n_matched += 1
-                    time_1 = time.clock()
-                    print('time %s %s %s' % (time_1-time_0, n_matched,
-                                             n_matching))
-                    time_0 = time_1
-                mindist_ *= 2
-                rebin *= 10
+            match_list_ = get_matching_list(tidx, te_df=tedf_,
+                                            tr_df=train_nib)
+            match_list_parallel = [{} for i in range(100)]
+            for tidx in match_list_:
+                match_list_parallel[tidx%100] = match_list_[tidx]
+            skiplist = tuple(randperm[:640])
+            parallel_args = [(traj_, i, match_list_parallel[i], skiplist)
+                             for i in range(100)]
+            for out_traj_ in pool.imap_unordered(find_common_trajectories,
+                                                 parallel_args):
+                for k, v in out_traj_.items():
+                    common_traj[k] = v
             sort_list = sorted(common_traj.items(), key=lambda x: x[1])
             cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
             best_lat = float(train_df[cond]['DEST_LAT'])

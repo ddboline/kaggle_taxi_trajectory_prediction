@@ -203,41 +203,56 @@ def feature_extraction(is_test=False):
         outf.close()
     return
 
-def get_trajectory(trj_idx=None, train_df=None):
+def get_trajectory(trj_idx=None, tr_df=None):
     """ Get trajectory """
-    return train_df[train_df['TRAJECTORY_IDX'] == trj_idx]\
+    return tr_df[tr_df['TRAJECTORY_IDX'] == trj_idx]\
                          [['LAT', 'LON']].values
 
-def compare_trajectories(test_trj, train_trj, mindist=0.05):
+def compare_trajectories(test_trj, train_trj, mindist=0.1):
     """ Compare two Trajectories"""
     n_common = 0
+    begin_idx = 0
+    end_idx = train_trj.shape[0]
     for test_lat, test_lon in test_trj:
         dlat, dlon = lat_lon_box(test_lat, mindist*2)
         n_common_tr = 0
-        for train_lat, train_lon in train_trj:
+        mindis = mindist
+        for tidx, latlon in enumerate(train_trj):
+            if tidx < begin_idx or tidx > end_idx:
+                continue
+            train_lat, train_lon = latlon
             if abs(train_lat-test_lat) > dlat or \
                     abs(train_lon-test_lon) > dlon:
                 continue
             dis = haversine_distance(test_lat, test_lon, train_lat, train_lon)
-            if dis < mindist:
-                n_common_tr += 1
+            if dis < mindis:
+                begin_idx = tidx
+                mindis = dis
+            n_common_tr += 1
         if n_common_tr > 0:
             n_common += 1
     return n_common
 
-def get_matching_list(tidx=None, test_df=None, train_df=None, rebinning=1):
+def get_matching_list(tidx=None, te_df=None, tr_df=None):
     """ Get list of matching Trajectories """
     latlon_list = set()
-    matching_list = defaultdict(int)
-    for _, row in test_df[test_df['TRAJECTORY_IDX'] == tidx].iterrows():
-        latlon_list.add((row['LATBIN']//rebinning, row['LONBIN']//rebinning))
+    matching_list_ = defaultdict(int)
+    for _, row in te_df[te_df['TRAJECTORY_IDX'] == tidx].iterrows():
+        latlon_list.add((row['LATBIN'], row['LONBIN']))
 
     for latbin, lonbin in latlon_list:
-        cond0 = (train_df['LATBIN']//rebinning) == latbin
-        cond1 = (train_df['LONBIN']//rebinning) == lonbin
-        trj_arr = sorted(train_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
+        cond0 = tr_df['LATBIN'] == latbin
+        cond1 = tr_df['LONBIN'] == lonbin
+        trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
-            matching_list[tidx] += 1
+            matching_list_[tidx] += 1
+    matching_list = {}
+    min_count = len(latlon_list)
+    while len(matching_list) == 0 and len(matching_list_) > 0:
+        for tidx, count in matching_list_.items():
+            if count >= min_count:
+                matching_list[tidx] = count
+        min_count -= 1
     return matching_list
 
 if __name__ == '__main__':
