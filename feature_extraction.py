@@ -233,7 +233,7 @@ def compare_trajectories(test_trj, train_trj, mindist=0.1):
             n_common += 1
     return n_common
 
-def get_matching_list(tidx=None, te_df=None, tr_df=None):
+def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
     """ Get list of matching Trajectories """
     latlon_list = set()
     matching_list = defaultdict(int)
@@ -246,6 +246,8 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None):
         cond1 = tr_df['LONBIN'] == lonbin
         trj_arr = sorted(tr_df[cond0 & cond1]['TRAJECTORY_IDX'].unique())
         for tidx in trj_arr:
+            if tidx in skiplist:
+                continue
             matching_list[tidx] += 1
             tidx_list.add(tidx)
     number_matching = 0

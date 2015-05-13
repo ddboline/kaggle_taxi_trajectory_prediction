@@ -136,13 +136,15 @@ def find_best_traj(do_plots=False):
             else:
                 tedf_ = train_nib
             common_traj = {}
+            skiplist_ = tuple(randperm[:640])
             match_list_ = get_matching_list(tidx, te_df=tedf_,
-                                            tr_df=train_nib)
+                                            tr_df=train_nib,
+                                            skiplist=skiplist_)
             match_list_parallel = [{} for i in range(100)]
             for tidx in match_list_:
                 match_list_parallel[tidx%100][tidx] = match_list_[tidx]
-            skiplist = tuple(randperm[:640])
-            parallel_args = [(traj_, i, match_list_parallel[i], skiplist)
+            
+            parallel_args = [(traj_, i, match_list_parallel[i], skiplist_)
                              for i in range(100)]
             for out_traj_ in pool.imap_unordered(find_common_trajectories,
                                                  parallel_args):
