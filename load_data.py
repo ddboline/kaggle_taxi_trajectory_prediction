@@ -64,8 +64,8 @@ def clean_data(df_):
     for col in ('ORIGIN_CALL', 'ORIGIN_STAND', 'MISSING_DATA',
                 'TRAJECTORY_IDX'):
         df_[col] = df_[col].astype(int)
-    df_ = df_.dropna(axis=0, subset=['ORIGIN_LAT', 'ORIGIN_LON', 'DEST_LAT',
-                                   'DEST_LON'])
+#    df_ = df_.dropna(axis=0, subset=['ORIGIN_LAT', 'ORIGIN_LON', 'DEST_LAT',
+#                                   'DEST_LON'])
 
 #    df_ = df_.drop(labels=['DAY_TYPE', 'TRIP_ID'], axis=1)
     return df_
@@ -102,7 +102,8 @@ def find_best_traj(do_plots=False):
     test_trj = pd.read_csv('test_trj.csv.gz', compression='gzip')
 
     randperm = np.random.permutation(np.arange(train_df.shape[0]))
-    dfs = [{'df': test_df, 'fn': 'test_final.csv.gz', 'test': True},
+    dfs = [
+           {'df': test_df, 'fn': 'test_final.csv.gz', 'test': True},
            {'df': train_df.iloc[randperm[:320], :],
             'fn': 'train_final.csv.gz', 'test': False},
            {'df': train_df.iloc[randperm[320:640], :],
