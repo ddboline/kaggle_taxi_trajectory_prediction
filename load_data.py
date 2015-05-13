@@ -178,10 +178,9 @@ def find_best_traj(do_plots=False):
             for k in row_dict:
                 if k in ('ORIGIN_LAT', 'ORIGIN_LON', 'TOTAL_DISTANCE',
                          'BEST_LAT', 'BEST_LON', 'AVG_LAT', 'AVG_LON',
-                         'DEST_LAT', 'DEST_LON'):
+                         'DEST_LAT', 'DEST_LON', 'TRIP_ID'):
                     continue
-                if k != 'TRIP_ID':
-                    row_dict[k] = int(row_dict[k])
+                row_dict[k] = int(row_dict[k])
             row_val = [row_dict[k] for k in outlabels]
             csv_writer.writerow(row_val)
             outfile.flush()
