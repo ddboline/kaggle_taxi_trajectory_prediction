@@ -133,15 +133,14 @@ def find_best_traj(do_plots=False, out_index=0):
     csv_writer = csv.writer(outfile)
     csv_writer.writerow(outlabels)
     print(outfname, df_.shape, first_event, last_event)
-    idx = 0
-    for _, row in df_.iterrows():
+    for idx, _row in enumerate(df_.iterrows()):
+        _, row = _row
         if idx < first_event:
             continue
         if idx >= last_event:
             continue
         if idx % 10 == 0:
             print('test %d' % idx)
-        idx += 1
         tidx = row['TRAJECTORY_IDX']
         if is_test:
             tdf_ = test_trj
