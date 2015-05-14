@@ -169,6 +169,7 @@ def find_best_traj(do_plots=False, out_index=0):
             for k, v in out_traj_.items():
                 common_traj[k] = v
         sort_list = sorted(common_traj.items(), key=lambda x: x[1])
+        print(type(sort_list), len(sort_list))
         cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
         best_lat = float(train_df[cond]['DEST_LAT'])
         best_lon = float(train_df[cond]['DEST_LON'])
