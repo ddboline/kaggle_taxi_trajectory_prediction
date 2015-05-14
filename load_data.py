@@ -132,7 +132,7 @@ def find_best_traj(do_plots=False, out_index=0):
     outfile = gzip.open('%s_%02d.csv.gz' % (outfname, evindex), 'wb')
     csv_writer = csv.writer(outfile)
     csv_writer.writerow(outlabels)
-    print(outfname, df_.shape)
+    print(outfname, df_.shape, first_event, last_event)
     for idx, row in df_.iterrows():
         if idx < first_event:
             continue
