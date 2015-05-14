@@ -38,10 +38,8 @@ def find_common_trajectories(args):
         if tidx in skiplist:
             continue
         n_matching += 1
-        print('got here...', fidx, tidx)
         train_traj_ = get_trajectory(tidx, tr_df=train_trj_)
         n_common = compare_trajectories(traj_, train_traj_, mindist=0.1)
-        print('and here...', fidx, n_common)
         if n_common == 0:
             continue
         common_traj[tidx] = n_common
@@ -162,7 +160,6 @@ def find_best_traj(do_plots=False, out_index=0):
         match_list_, min_n_match = get_matching_list(tidx, te_df=tedf_,
                                                      tr_df=train_nib,
                                                      skiplist=skiplist_)
-        print('match_list_', type(match_list_), min_n_match)
         print('match_list_', len(match_list_), min_n_match)
         match_list_parallel = [{} for i in range(100)]
         for tidx in match_list_:
@@ -176,7 +173,6 @@ def find_best_traj(do_plots=False, out_index=0):
             for k, v in out_traj_.items():
                 common_traj[k] = v
         sort_list = sorted(common_traj.items(), key=lambda x: x[1])
-        print(type(sort_list), len(sort_list))
         cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
         best_lat = float(train_df[cond]['DEST_LAT'])
         best_lon = float(train_df[cond]['DEST_LON'])

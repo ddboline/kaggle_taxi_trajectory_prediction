@@ -218,9 +218,6 @@ def compare_trajectories(test_trj, train_trj, mindist=0.1):
     n_common = 0
     begin_idx = 0
     end_idx = train_trj.shape[0]
-    print(test_trj)
-    print('test_trj.shape', test_trj.shape)
-    print('train_trj.shape', train_trj.shape)
     for test_lat, test_lon in test_trj:
         dlat, dlon = lat_lon_box(test_lat, mindist*2)
         n_common_tr = 0
