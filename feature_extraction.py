@@ -268,5 +268,5 @@ def get_matching_list(tidx=None, te_df=None, tr_df=None, skiplist=None):
     return matching_list, (min_number_matched+1)
 
 if __name__ == '__main__':
-    feature_extraction(is_test=False)
     feature_extraction(is_test=True)
+    feature_extraction(is_test=False)
