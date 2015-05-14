@@ -224,10 +224,10 @@ def compare_trajectories(test_trj, train_trj, mindist=0.1):
         dlat, dlon = lat_lon_box(test_lat, mindist*2)
         n_common_tr = 0
         mindis = mindist
-        for tidx, latlon in enumerate(train_trj):
+        for tidx in range(train_trj.shape[0]):
             if tidx < begin_idx or tidx > end_idx:
                 continue
-            train_lat, train_lon = latlon
+            train_lat, train_lon = train_trj[tidx, 0], train_trj[tidx, 1]
             if abs(train_lat-test_lat) > dlat or \
                     abs(train_lon-test_lon) > dlon:
                 continue

@@ -41,7 +41,7 @@ def find_common_trajectories(args):
         print('got here...', fidx, tidx)
         train_traj_ = get_trajectory(tidx, tr_df=train_trj_)
         n_common = compare_trajectories(traj_, train_traj_, mindist=0.1)
-        print('and here...', n_common)
+        print('and here...', fidx, n_common)
         if n_common == 0:
             continue
         common_traj[tidx] = n_common
