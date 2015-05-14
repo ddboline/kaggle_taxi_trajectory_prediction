@@ -209,4 +209,4 @@ def find_best_traj(do_plots=False, out_index=0):
     return
 
 if __name__ == '__main__':
-    find_best_traj(do_plots=False)
+    find_best_traj(do_plots=False, out_index=int(os.sys.argv[1]))
