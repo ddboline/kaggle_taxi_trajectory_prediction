@@ -1,19 +1,19 @@
 #!/bin/bash
 
-for F in train.csv.gz test.csv.gz metaData_taxistandsID_name_GPSlocation.csv.gz;
-do
-    scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/kaggle_taxi_trajectory_prediction/$F .
-done
-
-# for F in train_idx.csv.gz train_nib.csv.gz test_idx.csv.gz test_nib.csv.gz test_trj.csv.gz sampleSubmission.csv.gz;
+# for F in train.csv.gz test.csv.gz metaData_taxistandsID_name_GPSlocation.csv.gz;
 # do
 #     scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/kaggle_taxi_trajectory_prediction/$F .
 # done
-# mkdir -p train
-# scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/kaggle_taxi_trajectory_prediction/train/train_trj_*.csv.gz train/
 
-time ./feature_extraction.py
-# ./load_data.py
+for F in train_idx.csv.gz train_nib.csv.gz test_idx.csv.gz test_nib.csv.gz test_trj.csv.gz sampleSubmission.csv.gz;
+do
+    scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/kaggle_taxi_trajectory_prediction/$F .
+done
+mkdir -p train
+scp ddboline@ddbolineathome.mooo.com:/home/ddboline/setup_files/build/kaggle_taxi_trajectory_prediction/train/train_trj_*.csv.gz train/
+
+# time ./feature_extraction.py
+# ./load_data.py $1
 # ./my_model.py
 
 # D=`date +%Y%m%d%H%M%S`

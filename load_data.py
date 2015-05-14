@@ -135,6 +135,8 @@ def find_best_traj(do_plots=False, out_index=0):
             continue
         if idx >= last_event:
             continue
+        if idx >= 10:
+            continue
         if idx % 10 == 0:
             print('test %d' % idx)
         tidx = row['TRAJECTORY_IDX']
