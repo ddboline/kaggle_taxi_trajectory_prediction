@@ -116,10 +116,12 @@ def find_best_traj(do_plots=False, out_index=0):
                  'AVG_LAT', 'AVG_LON', 'AVG_TRIP_TIME',
                  'DEST_LAT', 'DEST_LON', 'TRIP_TIME']
 
-    fnindex = out_index//4
-    evindex = out_index%4
-    first_event = evindex*80
-    last_event = (evindex+1)*80
+    njobs = 5
+    nevents = 960/3/njobs
+    fnindex = out_index//njobs
+    evindex = out_index%njobs
+    first_event = evindex*nevents
+    last_event = (evindex+1)*nevents
 
     dfs_dict = dfs[fnindex]
     df_ = dfs_dict['df']
@@ -134,10 +136,6 @@ def find_best_traj(do_plots=False, out_index=0):
         if idx < first_event:
             continue
         if idx >= last_event:
-            continue
-        if idx == 0:
-            continue
-        if idx >= 10:
             continue
         if idx % 10 == 0:
             print('test %d' % idx)
