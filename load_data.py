@@ -150,8 +150,9 @@ def find_best_traj(do_plots=False, out_index=0):
             tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % tidx,
                                compression='gzip')
         traj_ = get_trajectory(tidx, tr_df=tdf_)
-        if traj_.shape[0] > 15:
-            traj_ = traj_[5:-5, 0]
+        if is_test:
+            if traj_.shape[0] > 15:
+                traj_ = traj_[5:-5, :]
         if is_test:
             tedf_ = test_nib
         else:
