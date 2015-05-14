@@ -111,8 +111,10 @@ def find_best_traj(do_plots=False, out_index=0):
 
     outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND',
                  'NMINMATCH', 'TAXI_ID', 'TIMESTAMP',
-                 'ORIGIN_LAT', 'ORIGIN_LON', 'BEST_LAT', 'BEST_LON',
-                 'AVG_LAT', 'AVG_LON', 'DEST_LAT', 'DEST_LON']
+                 'ORIGIN_LAT', 'ORIGIN_LON',
+                 'BEST_LAT', 'BEST_LON', 'BEST_TRIP_TIME',
+                 'AVG_LAT', 'AVG_LON', 'AVG_TRIP_TIME',
+                 'DEST_LAT', 'DEST_LON', 'TRIP_TIME']
 
     fnindex = out_index//4
     evindex = out_index%4
@@ -168,21 +170,28 @@ def find_best_traj(do_plots=False, out_index=0):
         cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
         best_lat = float(train_df[cond]['DEST_LAT'])
         best_lon = float(train_df[cond]['DEST_LON'])
+        best_time = float(train_df[cond]['TRIP_TIME'])
         top_lats = []
         top_lons = []
+        top_time = []
         for key, _ in sort_list[-10:]:
             cond = train_df['TRAJECTORY_IDX'] == key
             top_lats.append(float(train_df[cond]['DEST_LAT']))
             top_lons.append(float(train_df[cond]['DEST_LON']))
+            top_time.append(float(train_df[cond]['TRIP_TIME']))
         avg_lat = np.mean(top_lats)
         avg_lon = np.mean(top_lons)
+        avg_time = np.mean(top_time)
         dist = haversine_distance(best_lat, best_lon, avg_lat, avg_lon)
-        print('best-avg dist %s' % dist)
+        dtime = abs(best_time-avg_time)
+        print('best-avg dist %s time %s' % (dist, dtime))
         row_dict = dict(row)
         row_dict['BEST_LAT'] = best_lat
         row_dict['BEST_LON'] = best_lon
+        row_dict['BEST_TRIP_TIME'] = best_time
         row_dict['AVG_LAT'] = avg_lat
         row_dict['AVG_LON'] = avg_lon
+        row_dict['AVG_TRIP_TIME'] = avg_time
         row_dict['NMINMATCH'] = min_n_match
         for k in row_dict:
             if k in ('ORIGIN_LAT', 'ORIGIN_LON', 'TOTAL_DISTANCE',
