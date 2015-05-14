@@ -134,6 +134,7 @@ def find_best_traj(do_plots=False, out_index=0):
     csv_writer.writerow(outlabels)
     print(outfname, df_.shape, first_event, last_event)
     for idx, row in df_.iterrows():
+        print(idx)
         if idx < first_event:
             continue
         if idx >= last_event:
