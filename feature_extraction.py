@@ -63,7 +63,9 @@ def lat_lon_box(lat, dist):
 
 def split_polyline(polyline_str):
     """ Split POLYLINE string """
-    latlons = []
+    latlons_original = []
+    latlons_filtered = []
+    lat_prev, lon_prev = None, None
     missing = 0
     for idx, latlon in enumerate(polyline_str.split('],[')):
         latlon = latlon.replace('[[', '').replace(']]', '')
@@ -71,9 +73,11 @@ def split_polyline(polyline_str):
             continue
         lon, lat = [float(x) for x in latlon.split(',')]
 
+        latlons_original.append((lat, lon))
+
         dis = 0
-        if len(latlons) > 0:
-            dis = haversine_distance(lat, lon, latlons[-1][0], latlons[-1][1])
+        if lat_prev is not None and lon_prev is not None:
+            dis = haversine_distance(lat, lon, lat_prev, lon_prev)
 
         if dis > 1.0 * (1 + missing):
             missing += 1
@@ -85,8 +89,9 @@ def split_polyline(polyline_str):
                 missing += 1
                 continue
 
-        latlons.append((lat, lon, dis))
-    return latlons
+        latlons_filtered.append((lat, lon, dis))
+        lat_prev, lon_prev = lat, lon
+    return latlons_original, latlons_filtered
 
 def feature_extraction(is_test=False):
     """ extract features """
@@ -131,7 +136,7 @@ def feature_extraction(is_test=False):
                           'ORIGIN_STAND', 'TAXI_ID', 'TIMESTAMP', 'DAY_TYPE',
                           'MISSING_DATA', 'TRAJECTORY_IDX', 'ORIGIN_LAT',
                           'ORIGIN_LON', 'NUMBER_POINTS', 'TOTAL_DISTANCE',
-                          'DEST_LAT', 'DEST_LON']
+                          'DEST_LAT', 'DEST_LON', 'TRIP_TIME']
         new_labels_trj = ['TRAJECTORY_IDX', 'POINT_IDX', 'LAT', 'LON', 'LATBIN',
                           'LONBIN']
         csv_writer_idx.writerow(new_labels_idx)
@@ -140,7 +145,7 @@ def feature_extraction(is_test=False):
         csv_writer_nib.writerow(['TRAJECTORY_IDX', 'LATBIN', 'LONBIN'])
         for idx, row in enumerate(csv_reader):
             row_dict = dict(zip(labels, row))
-            latlon_points = split_polyline(row_dict['POLYLINE'])
+            points_orig, latlon_points = split_polyline(row_dict['POLYLINE'])
             tot_dist = 0
             bin_set = set()
             for idy, lat_lon in enumerate(latlon_points):
@@ -154,6 +159,7 @@ def feature_extraction(is_test=False):
             for latb, lonb in sorted(bin_set):
                 csv_writer_nib.writerow([idx, latb, lonb])
 
+            n_points_orig = len(points_orig)
             n_points = len(latlon_points)
             if n_points == 0:
                 row_dict['ORIGIN_LAT'], row_dict['ORIGIN_LON'] = ('nan', 'nan')
@@ -188,14 +194,13 @@ def feature_extraction(is_test=False):
             row_dict['TRAJECTORY_IDX'] = idx
 
             row_dict['NUMBER_POINTS'] = n_points
+            row_dict['TRIP_TIME'] = (n_points_orig-1)*15
             row_dict['TOTAL_DISTANCE'] = tot_dist
 
             row_val = [row_dict[col] for col in new_labels_idx]
             csv_writer_idx.writerow(row_val)
             if idx % 10000 == 0:
                 print('processed %d' % idx)
-#            if idx > 10000:
-#                exit(0)
 
     output_file_idx.close()
     output_file_nib.close()

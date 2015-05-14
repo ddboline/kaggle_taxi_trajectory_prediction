@@ -70,7 +70,7 @@ def clean_data(df_):
 #    df_ = df_.drop(labels=['DAY_TYPE', 'TRIP_ID'], axis=1)
     return df_
 
-def find_best_traj(do_plots=False):
+def find_best_traj(do_plots=False, out_index=0):
     """
         Find the best trajectories from "template" sample
     """
@@ -101,90 +101,92 @@ def find_best_traj(do_plots=False):
 
     test_trj = pd.read_csv('test_trj.csv.gz', compression='gzip')
 
+    np.random.seed(8675309)
     randperm = np.random.permutation(np.arange(train_df.shape[0]))
-    dfs = [
-           {'df': test_df, 'fn': 'test_final.csv.gz', 'test': True},
+    dfs = [{'df': test_df, 'fn': 'test_final', 'test': True},
            {'df': train_df.iloc[randperm[:320], :],
-            'fn': 'train_final.csv.gz', 'test': False},
+            'fn': 'train_final', 'test': False},
            {'df': train_df.iloc[randperm[320:640], :],
-            'fn': 'valid_final.csv.gz', 'test': False}]
+            'fn': 'valid_final', 'test': False}]
 
-    outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND', 
-                 'NMINMATCH', 'TAXI_ID', 'TIMESTAMP', 
+    outlabels = ['TRIP_ID', 'CALL_TYPE', 'ORIGIN_CALL', 'ORIGIN_STAND',
+                 'NMINMATCH', 'TAXI_ID', 'TIMESTAMP',
                  'ORIGIN_LAT', 'ORIGIN_LON', 'BEST_LAT', 'BEST_LON',
                  'AVG_LAT', 'AVG_LON', 'DEST_LAT', 'DEST_LON']
 
-    for dfs_dict in dfs:
-        df_ = dfs_dict['df']
-        outfname = dfs_dict['fn']
-        is_test = dfs_dict['test']
-        outfile = gzip.open(outfname, 'wb')
-        csv_writer = csv.writer(outfile)
-        csv_writer.writerow(outlabels)
-        print(outfname)
-        for idx, row in df_.iterrows():
+    dfs_dict = dfs[out_index//4]
+    df_ = dfs_dict['df']
+    outfname = dfs_dict['fn']
+    is_test = dfs_dict['test']
+    outfile = gzip.open('%s_%02d.csv.gz' % (outfname, (out_index%4)), 'wb')
+    csv_writer = csv.writer(outfile)
+    csv_writer.writerow(outlabels)
+    print(outfname)
+    for idx, row in df_.iterrows():
 #            if idx < 4:
 #                continue
 #            if idx >= 5:
 #                exit(0)
-            if idx % 10 == 0:
-                print('test %d' % idx)
-            tidx = row['TRAJECTORY_IDX']
-            if is_test:
-                tdf_ = test_trj
-            else:
-                tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % tidx,
-                                   compression='gzip')
-            traj_ = get_trajectory(tidx, tr_df=tdf_)
-            if is_test:
-                tedf_ = test_nib
-            else:
-                tedf_ = train_nib
-            common_traj = {}
-            skiplist_ = tuple(randperm[:640])
-            match_list_, min_n_match = get_matching_list(tidx, te_df=tedf_,
-                                                         tr_df=train_nib,
-                                                         skiplist=skiplist_)
-            print('match_list_', len(match_list_), min_n_match)
-            match_list_parallel = [{} for i in range(100)]
-            for tidx in match_list_:
-                match_list_parallel[tidx%100][tidx] = match_list_[tidx]
-            
-            parallel_args = [(traj_, i, match_list_parallel[i], skiplist_)
-                             for i in range(100)]
-            for out_traj_ in pool.imap_unordered(find_common_trajectories,
-                                                 parallel_args):
-                for k, v in out_traj_.items():
-                    common_traj[k] = v
-            sort_list = sorted(common_traj.items(), key=lambda x: x[1])
-            cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
-            best_lat = float(train_df[cond]['DEST_LAT'])
-            best_lon = float(train_df[cond]['DEST_LON'])
-            top_lats = []
-            top_lons = []
-            for key, _ in sort_list[-10:]:
-                cond = train_df['TRAJECTORY_IDX'] == key
-                top_lats.append(float(train_df[cond]['DEST_LAT']))
-                top_lons.append(float(train_df[cond]['DEST_LON']))
-            avg_lat = np.mean(top_lats)
-            avg_lon = np.mean(top_lons)
-            dist = haversine_distance(best_lat, best_lon, avg_lat, avg_lon)
-            print('best-avg dist %s' % dist)
-            row_dict = dict(row)
-            row_dict['BEST_LAT'] = best_lat
-            row_dict['BEST_LON'] = best_lon
-            row_dict['AVG_LAT'] = avg_lat
-            row_dict['AVG_LON'] = avg_lon
-            row_dict['NMINMATCH'] = min_n_match
-            for k in row_dict:
-                if k in ('ORIGIN_LAT', 'ORIGIN_LON', 'TOTAL_DISTANCE',
-                         'BEST_LAT', 'BEST_LON', 'AVG_LAT', 'AVG_LON',
-                         'DEST_LAT', 'DEST_LON', 'TRIP_ID'):
-                    continue
-                row_dict[k] = int(row_dict[k])
-            row_val = [row_dict[k] for k in outlabels]
-            csv_writer.writerow(row_val)
-            outfile.flush()
+        if idx % 10 == 0:
+            print('test %d' % idx)
+        tidx = row['TRAJECTORY_IDX']
+        if is_test:
+            tdf_ = test_trj
+        else:
+            tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % tidx,
+                               compression='gzip')
+        traj_ = get_trajectory(tidx, tr_df=tdf_)
+        if traj_.shape[0] > 15:
+            traj_ = traj_[5:-5, 0]
+        if is_test:
+            tedf_ = test_nib
+        else:
+            tedf_ = train_nib
+        common_traj = {}
+        skiplist_ = tuple(randperm[:640])
+        match_list_, min_n_match = get_matching_list(tidx, te_df=tedf_,
+                                                     tr_df=train_nib,
+                                                     skiplist=skiplist_)
+        print('match_list_', len(match_list_), min_n_match)
+        match_list_parallel = [{} for i in range(100)]
+        for tidx in match_list_:
+            match_list_parallel[tidx%100][tidx] = match_list_[tidx]
+
+        parallel_args = [(traj_, i, match_list_parallel[i], skiplist_)
+                         for i in range(100)]
+        for out_traj_ in pool.imap_unordered(find_common_trajectories,
+                                             parallel_args):
+            for k, v in out_traj_.items():
+                common_traj[k] = v
+        sort_list = sorted(common_traj.items(), key=lambda x: x[1])
+        cond = train_df['TRAJECTORY_IDX'] == sort_list[-1][0]
+        best_lat = float(train_df[cond]['DEST_LAT'])
+        best_lon = float(train_df[cond]['DEST_LON'])
+        top_lats = []
+        top_lons = []
+        for key, _ in sort_list[-10:]:
+            cond = train_df['TRAJECTORY_IDX'] == key
+            top_lats.append(float(train_df[cond]['DEST_LAT']))
+            top_lons.append(float(train_df[cond]['DEST_LON']))
+        avg_lat = np.mean(top_lats)
+        avg_lon = np.mean(top_lons)
+        dist = haversine_distance(best_lat, best_lon, avg_lat, avg_lon)
+        print('best-avg dist %s' % dist)
+        row_dict = dict(row)
+        row_dict['BEST_LAT'] = best_lat
+        row_dict['BEST_LON'] = best_lon
+        row_dict['AVG_LAT'] = avg_lat
+        row_dict['AVG_LON'] = avg_lon
+        row_dict['NMINMATCH'] = min_n_match
+        for k in row_dict:
+            if k in ('ORIGIN_LAT', 'ORIGIN_LON', 'TOTAL_DISTANCE',
+                     'BEST_LAT', 'BEST_LON', 'AVG_LAT', 'AVG_LON',
+                     'DEST_LAT', 'DEST_LON', 'TRIP_ID'):
+                continue
+            row_dict[k] = int(row_dict[k])
+        row_val = [row_dict[k] for k in outlabels]
+        csv_writer.writerow(row_val)
+        outfile.flush()
     return
 
 if __name__ == '__main__':
