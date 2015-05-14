@@ -114,19 +114,25 @@ def find_best_traj(do_plots=False, out_index=0):
                  'ORIGIN_LAT', 'ORIGIN_LON', 'BEST_LAT', 'BEST_LON',
                  'AVG_LAT', 'AVG_LON', 'DEST_LAT', 'DEST_LON']
 
-    dfs_dict = dfs[out_index//4]
+    fnindex = out_index//4
+    evindex = out_index%4
+    first_event = evindex*80
+    last_event = (evindex+1)*80
+
+    dfs_dict = dfs[fnindex]
     df_ = dfs_dict['df']
     outfname = dfs_dict['fn']
     is_test = dfs_dict['test']
-    outfile = gzip.open('%s_%02d.csv.gz' % (outfname, (out_index%4)), 'wb')
+
+    outfile = gzip.open('%s_%02d.csv.gz' % (outfname, evindex), 'wb')
     csv_writer = csv.writer(outfile)
     csv_writer.writerow(outlabels)
     print(outfname)
     for idx, row in df_.iterrows():
-#            if idx < 4:
-#                continue
-#            if idx >= 5:
-#                exit(0)
+        if idx < first_event:
+            continue
+        if idx >= last_event:
+            continue
         if idx % 10 == 0:
             print('test %d' % idx)
         tidx = row['TRAJECTORY_IDX']
