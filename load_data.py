@@ -121,8 +121,8 @@ def find_best_traj(do_plots=False, out_index=0):
     nevents = 960/3/njobs
     fnindex = out_index//njobs
     evindex = out_index%njobs
-    first_event = evindex*nevents
-    last_event = (evindex+1)*nevents
+    first_event = int(evindex*nevents)
+    last_event = int((evindex+1)*nevents)
 
     dfs_dict = dfs[fnindex]
     df_ = dfs_dict['df']
