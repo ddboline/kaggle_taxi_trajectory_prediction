@@ -167,6 +167,8 @@ def find_best_traj(do_plots=False, out_index=0):
                          for i in range(100)]
         for out_traj_ in pool.imap_unordered(find_common_trajectories,
                                              parallel_args):
+            if not hasattr(out_traj_, 'items'):
+                print('how did this happen? %s' % type(out_traj_))
             for k, v in out_traj_.items():
                 common_traj[k] = v
         sort_list = sorted(common_traj.items(), key=lambda x: x[1])
