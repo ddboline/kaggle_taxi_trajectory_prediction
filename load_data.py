@@ -145,7 +145,7 @@ def find_best_traj(do_plots=False, out_index=0):
         if is_test:
             tdf_ = test_trj
         else:
-            tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % tidx,
+            tdf_ = pd.read_csv('train/train_trj_%02d.csv.gz' % (tidx%100),
                                compression='gzip')
         traj_ = get_trajectory(tidx, tr_df=tdf_)
         if is_test:
